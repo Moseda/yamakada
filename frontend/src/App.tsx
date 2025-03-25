@@ -5,6 +5,8 @@ import Login from './Components/Login/Login';
 import Register from './Components/Register/Register';
 import EmailVerification from './Verification/EmailVerification';
 //import NotFoundError from './Components/errors/error404';
+import ProtectedRoute from './Components/ProtectedRoute';
+
 
 //React router dom
 import{
@@ -25,7 +27,7 @@ const router = createBrowserRouter([
 
     {
       path: '/dashboard',
-      element: <div><Dashboard /></div>
+      element: <ProtectedRoute><Dashboard /></ProtectedRoute>
     },
     {
       path: "/verify/:token",

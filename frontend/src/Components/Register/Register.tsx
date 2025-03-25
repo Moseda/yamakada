@@ -19,7 +19,7 @@ const Register = () => {
 
   // State for error and success messages
   const [registerStatus, setRegisterStatus] = useState('');
-  const [passwordErrors, setPasswordErrors] = useState([]);
+  const [passwordErrors, setPasswordErrors] = useState<String[]>([]);
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [emailErrors, setEmailErrors] = useState<string[]>([]);
 

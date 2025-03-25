@@ -1,207 +1,144 @@
-require('dotenv').config();
+// Load environment variables
+import * as dotenv from 'dotenv';
+dotenv.config();
 
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import db from './db'; // Import database connection
+import sendEmail from './mailer';
+import { verifyToken } from './Middlewares/auth';
 
-const express = require ('express');
 const app = express();
+app.use(express.json());
+app.use(cors());
 
-const mysql = require('mysql');
-const cors = require('cors');
+const SECRET_KEY = process.env.SECRET_KEY || 'default_secret';
 
-import sendEmail from "./mailer";
+// Start server
+app.listen(3002, () => console.log('Server running on port 3002'));
 
+// User registration
+app.post('/register', async (req: Request, res: Response): Promise<any>=> {
+    
+    const { Email: sentEmail, Username: sentUsername, Password: sentPassword } = req.body;
 
-app.use(express.json())
-app.use(cors())
+    try {
+        // Check if email or username is already taken
+        const [existingUsers]: any = await db.query(
+            'SELECT email, username FROM user WHERE email = ? OR username = ?',
+            [sentEmail, sentUsername]
+        );
 
-const jwt = require('jsonwebtoken');
-const SECRET_KEY = 'xlzdc5mCFG5X1O+xm1+FPGao/CXeYwhhZfwJ4dhp5J4=';
+        if (existingUsers.length > 0) {
+            const isEmailTaken = existingUsers.some((user: any) => user.email === sentEmail);
+            const isUsernameTaken = existingUsers.some((user: any) => user.username === sentUsername);
 
+            return res.status(409).json({
+                message:
+                    isEmailTaken && isUsernameTaken
+                        ? 'Email and username already taken'
+                        : isEmailTaken
+                        ? 'Email already taken'
+                        : 'Username already taken',
+            });
+        }
 
-//remember this does its function its not the problem
-app.listen(3002, ()=>{
-    console.log('Server is running on port 3002')
-})
+        // Hash the password
+        const hash = await bcrypt.hash(sentPassword, 10);
 
-//create database
-const db = mysql.createConnection({
-    user: 'sammy',
-    port: '3307',
-    host: 'localhost',
-    password: 'Nogamenolife1',
-    database: 'mimuco',
-})
+        // Generate verification token
+        const verificationToken = jwt.sign({ email: sentEmail }, SECRET_KEY, { expiresIn: '1d' });
 
-db.connect((err) => {
-    if(err) {
-        console.error('Error connecting to database:', err);
-        return;
+        // Insert user into the database
+        await db.query(
+            'INSERT INTO user (email, username, password, is_verified, verification_token) VALUES (?, ?, ?, ?, ?)',
+            [sentEmail, sentUsername, hash, 0, verificationToken]
+        );
+
+        // Send verification email
+        const confirmationLink = `http://localhost:5173/verify/${verificationToken}`;
+        const emailHTML = `
+            <h1>Welcome to Mimuco!</h1>
+            <p>Thanks for signing up. Please verify your email:</p>
+            <a href="${confirmationLink}">Verify my email</a>
+        `;
+
+        await sendEmail(
+            sentEmail,
+            'Verify Your Mimuco Account',
+            `Please verify your email: ${confirmationLink}`,
+            emailHTML
+        );
+
+        res.status(201).json({ message: 'User registered. Check your email for verification.' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
     }
-    console.log('Connected to database');
 });
 
-app.post('/register', (req, res)=>{
-    const sentEmail = req.body.Email
-    const sentUsername = req.body.Username
-    const sentPassword = req.body.Password
+// Email verification
+app.get('/verify/:token', async (req: Request, res: Response, next: NextFunction):Promise<any> => {
+    try {
+        const { token } = req.params;
+        const decoded = jwt.verify(token, SECRET_KEY) as { email: string };
 
-    // check if username and email used
-    db.query('SELECT * FROM user WHERE email = ? OR username = ?', [sentEmail, sentUsername], (err, results) => {
-        if (err) return res.status(500).send(err);
-        
-        if (results.length > 0) {
-            const isEmailTaken = results.some(user => user.email === sentEmail);
-            const isUsernameTaken = results.some(user => user.username === sentUsername);
-            
-            if (isEmailTaken && isUsernameTaken) {
-                return res.status(409).send({ message: 'Email and username already taken' });
-            } else if (isEmailTaken) {
-                return res.status(409).send({ message: 'Email already taken' });
-            } else {
-                return res.status(409).send({ message: 'Username already taken' });
-            }
+        const [result]: any = await db.query('UPDATE user SET is_verified = 1 WHERE email = ?', [
+            decoded.email,
+        ]);
+
+        if (result.affectedRows === 0) {
+            return res.status(400).json({ message: 'Email already verified' });
         }
-    
-        //hash password
-        const bcrypt = require('bcrypt');
-        const saltRounds = 10;
-        bcrypt.hash(sentPassword, saltRounds, (err, hash) => {
-            if (err) return res.status(500).send({ message: "Error hashing password" });
 
-            //confirmation token
-            const verification_token = jwt.sign({ email: sentEmail }, SECRET_KEY, { expiresIn: '1d' });
-
-
-            const SQL = 'INSERT INTO user (email, username, password, is_verified, verification_token) VALUES (?, ?, ?, ?, ?)';
-            const values = [sentEmail, sentUsername, hash, 0, verification_token];
-
-            // Execute query
-            db.query(SQL, values, (err, results)=>{
-                if(err){
-                    return res.status(500).send(err);
-                }else{
-
-                    //send a verification link
-                    const confirmationLink = `http://localhost:5173/verify/${verification_token}`;
-                    const emailHTML = `
-                    <h1>Welcome to Mimuco!</h1>
-                    <p>Thanks for signing up. Please verify your email by clicking the link below:</p>
-                    <a href="${confirmationLink}">Verify my email</a>
-                    `;
-                    
-                    sendEmail(
-                        sentEmail,
-                        "Verify Your Mimuco Account",
-                        `Please verify your email by visiting: ${confirmationLink}`,
-                        emailHTML
-                    )
-                    .then(() => {
-                        console.log(`Confirmation email sent to: ${sentEmail}`);
-                        return res.send({ message: 'User added. Please check your email to confirm your account.' });
-                    })
-                    .catch((err) => {
-                        console.error("Email failed", err);
-                        return res.status(500).send({ message: "Registration successful but verification email could not be sent. Please contact support." });
-                    });
-
-                }
-            })
-        });
-    });
-    
+        res.json({ message: 'Email verified successfully!' });
+    } catch (err) {
+        console.error(err);
+        res.json({ message: 'Invalid or expired token' });
+    }
 });
 
-// for the verification of the email
-app.get('/verify/:token', (req, res) => {
-    const token = req.params.token;
-    
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) {
-            return res.status(400).send({ message: 'Invalid or expired verification token' });
+// User login
+app.post('/login', async (req: Request, res: Response): Promise<void> => {
+    const { loginUsername, loginPassword } = req.body;
+
+    try {
+        const [users]: any = await db.query('SELECT * FROM user WHERE username = ?', [
+            loginUsername,
+        ]);
+        if (users.length === 0) {
+            res.status(401).json({ message: 'Invalid username or password' });
+            return;
         }
-        
-        const email = decoded.email;
-        
-        db.query('UPDATE user SET is_verified = 1 WHERE email = ?', [email], (err, results) => {
-            if (err) {
-                return res.status(500).send({ message: 'Error updating user verification status' });
-            }
-            
-            if (results.affectedRows === 0) {
-                return res.send({ message: 'Email already verified.' });
-            }
-            
-            // Redirect to frontend with success message
-            res.send({ message: 'Email verified successfully!' });
 
-            //res.redirect('http://localhost:5173/?verified=true');
-        });
-    });
-});
-
-
-
-// let registred users log in (check if there credentials are in DB)
-
-app.post('/login', (req, res)=>{
-   
-    const sentLoginUsername = req.body.loginUsername
-    const sentLoginPassword = req.body.loginPassword
-
-    // now create SQL statement to insert the user data
-
-    const SQL = 'SELECT * FROM user WHERE username = ?'
-
-    
-
-    db.query(SQL, [sentLoginUsername], (err, results)=>{
-        if(err){
-            return res.send({error : err})
-
-        //check if user exists
-        }if(results.length > 0){
-            const user = results[0]
-
-            if(user.is_verified === 0){
-                return res.send({message:'account not activated yet check your email'}) // the email hasnt been verified yet
-            }
-
-            //hash the typed pass and compare it to the stored hash
-            const bcrypt = require('bcrypt')
-            bcrypt.compare(sentLoginPassword, user.password, (err: any, isMatch: any)=>{
-                if (err){
-                    return res.send({error:err})
-                }
-                
-                if(isMatch){
-                    //passes matched
-                    const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
-                    return res.send({ success: true, token });
-                }
-
-                else{
-                    return res.send({message:'Invalid Username or Password'}) // wrong pass
-                }
-
-            })
-        }else{
-            return res.send({message: 'Invalid Username or Password'}) // user not in DB
+        const user = users[0];
+        if (!user.is_verified) {
+            res.status(403).json({ message: 'Account not verified. Check your email.' });
+            return;
         }
-    })
+
+        const isMatch = await bcrypt.compare(loginPassword, user.password);
+        if (!isMatch) {
+            res.status(401).json({ message: 'Invalid username or password' });
+            return;
+        }
+
+        const token = jwt.sign(
+            { id: user.id, username: user.username },
+            SECRET_KEY,
+            { expiresIn: '1h' }
+        );
+        res.json({ success: true, token });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
 });
 
-const verifyToken = (req, res, next) => {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(403).send({ message: 'No token provided' });
-    
-    jwt.verify(token, SECRET_KEY, (err, decoded) => {
-        if (err) return res.status(401).send({ message: 'Unauthorized' });
-        req.userId = decoded.id;
-        next();
-    });
-};
+app.get('/verify-token', verifyToken, (req: any, res: any)=> {
+    res.json({ isValid: true, user: (req as any).user });
+});
 
-// Example protected route
-app.get('/protected-route', verifyToken, (req, res) => {
-    res.send({ message: 'This is protected data' });
-})
-
+export default app;

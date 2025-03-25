@@ -6,15 +6,8 @@ import pluginReact from "eslint-plugin-react";
 
 export default defineConfig([
   { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"] },
-  {
-    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-    languageOptions: { globals: globals.browser },
-  },
-  {
-    files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
-    plugins: { js },
-    extends: ["js/recommended"],
-  },
+  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], languageOptions: { globals: globals.browser } },
+  { files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"], plugins: { js }, extends: ["js/recommended"] },
   tseslint.configs.recommended,
   {
     files: ["**/*.{jsx,tsx}"],
@@ -22,8 +15,8 @@ export default defineConfig([
     rules: pluginReact.configs.recommended.rules,
     settings: {
       react: {
-        version: "detect", // or specify a version like "18.0"
-      },
-    },
+        version: "detect" // or specify a version like "18.0"
+      }
+    }
   },
 ]);
