@@ -1,120 +1,150 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar, Nav, Container, Row, Col, Card, ProgressBar } from 'react-bootstrap';
-import { FaChartLine, FaUsers, FaMoneyBillWave, FaTasks } from 'react-icons/fa';
-import { IoExitOutline } from "react-icons/io5";
+import React, { useState, useEffect } from 'react';
+import { Navbar, Nav, Container, Card, Dropdown } from 'react-bootstrap';
+import { IoExitOutline } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
 
-
 const Dashboard = () => {
+  // Dummy username; in real use, this should come from user data (e.g., context or props)
+  const userName = 'Simo';
+  const initial = userName[0].toUpperCase();
+
+  // Set a random background color for the avatar
+  const colors = ['#FF5733', '#33FF57', '#3357FF', '#F0A500', '#8E44AD'];
+  const [avatarColor, setAvatarColor] = useState('');
+
+  useEffect(() => {
+    setAvatarColor(colors[Math.floor(Math.random() * colors.length)]);
+  }, []);
+
   return (
     <div>
+      {/* Navbar */}
       <Navbar bg="dark" variant="dark" expand="lg">
         <Container>
-          <Navbar.Brand href="#home">Mimuco Dashboard</Navbar.Brand>
+          {/* Logo remains on the left */}
+          <Navbar.Brand as={Link} to="/dashboard">
+            Mimuco Dashboard
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
-            <Nav className="ms-auto">
-              <Nav.Link href="#home">Home</Nav.Link>
-              <Nav.Link href="#analytics">Analytics</Nav.Link>
-              <Nav.Link href="#settings">Settings</Nav.Link>
-              <Link to="/" className="btn btn-outline-light">
-                <IoExitOutline className="me-2" /> Logout
-              </Link>
-            </Nav>
+          <Navbar.Collapse className="justify-content-end">
+            {/* User Avatar with Dropdown */}
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="light"
+                id="dropdown-basic"
+                className="d-flex align-items-center"
+                style={{
+                  backgroundColor: avatarColor,
+                  border: 'none',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  fontWeight: 'bold',
+                  color: 'white',
+                }}
+              >
+                {initial}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item as={Link} to="/profile">
+                  Profile
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/settings">
+                  Settings
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/about-us">
+                  About Us
+                </Dropdown.Item>
+                <Dropdown.Item as={Link} to="/categorizer">
+                  Categorizer
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item as={Link} to="/" className="d-flex align-items-center">
+                  <IoExitOutline className="me-2" /> Logout
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
           </Navbar.Collapse>
         </Container>
       </Navbar>
 
-      <Container className="mt-4">
-        <h1 className="mb-4">Dashboard Overview</h1>
-        
-        <Row>
-          <Col md={3}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title><FaChartLine /> Revenue</Card.Title>
-                <h3>€1,234,567</h3>
-                <Card.Text className="text-success">+15% from last month</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title><FaUsers /> Active Users</Card.Title>
-                <h3>45,678</h3>
-                <Card.Text className="text-primary">+5% new users</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title><FaMoneyBillWave /> Profit Margin</Card.Title>
-                <h3>23.4%</h3>
-                <Card.Text className="text-warning">-2% from target</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={3}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title><FaTasks /> Tasks Completed</Card.Title>
-                <h3>789</h3>
-                <Card.Text className="text-info">98% completion rate</Card.Text>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+      {/* Main Layout */}
+      <Container
+        className="mt-4 position-relative"
+        style={{ minHeight: '400px' }}
+      >
+        {/* Central clickable container */}
+        <Card
+          className="text-center mx-auto"
+          style={{
+            width: '300px',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            cursor: 'pointer',
+          }}
+          onClick={() => alert('Central container clicked')}
+        >
+          <Card.Body>
+            <Card.Title>Central Box</Card.Title>
+            <Card.Text>Click to explore!</Card.Text>
+          </Card.Body>
+        </Card>
 
-        <Row>
-          <Col md={6}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title>Project Progress</Card.Title>
-                <Card.Text>Data Integration Project</Card.Text>
-                <ProgressBar now={60} label={`60%`} />
-                <Card.Text className="mt-2">API Development</Card.Text>
-                <ProgressBar now={85} label={`85%`} variant="success" />
-                <Card.Text className="mt-2">User Interface Design</Card.Text>
-                <ProgressBar now={30} label={`30%`} variant="info" />
-              </Card.Body>
-            </Card>
-          </Col>
-          <Col md={6}>
-            <Card className="mb-4">
-              <Card.Body>
-                <Card.Title>Recent Activities</Card.Title>
-                <ul className="list-unstyled">
-                  <li>✅ New client onboarded: TechCorp Inc.</li>
-                  <li>🔄 System update completed</li>
-                  <li>📊 Monthly report generated</li>
-                  <li>🚀 New feature deployed: Advanced Analytics</li>
-                </ul>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        {/* Top container */}
+        <Card
+          className="text-center position-absolute"
+          style={{
+            width: '200px',
+            top: '10%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            cursor: 'pointer',
+          }}
+          onClick={() => alert('Top container clicked')}
+        >
+          <Card.Body>
+            <Card.Title>Top Box</Card.Title>
+          </Card.Body>
+        </Card>
 
-        <Row>
-          <Col md={12}>
-            <Card>
-              <Card.Body>
-                <Card.Title>Upcoming Tasks</Card.Title>
-                <ul>
-                  <li>Quarterly business review - Due in 5 days</li>
-                  <li>Client presentation for DataSync Pro - Tomorrow</li>
-                  <li>Team training on new security protocols - Next week</li>
-                  <li>Software version update - Scheduled for 15th</li>
-                </ul>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        {/* Left container */}
+        <Card
+          className="text-center position-absolute"
+          style={{
+            width: '200px',
+            top: '50%',
+            left: '10%',
+            transform: 'translateY(-50%)',
+            cursor: 'pointer',
+          }}
+          onClick={() => alert('Left container clicked')}
+        >
+          <Card.Body>
+            <Card.Title>Left Box</Card.Title>
+          </Card.Body>
+        </Card>
+
+        {/* Right container */}
+        <Card
+          className="text-center position-absolute"
+          style={{
+            width: '200px',
+            top: '50%',
+            right: '10%',
+            transform: 'translateY(-50%)',
+            cursor: 'pointer',
+          }}
+          onClick={() => alert('Right container clicked')}
+        >
+          <Card.Body>
+            <Card.Title>Right Box</Card.Title>
+          </Card.Body>
+        </Card>
       </Container>
     </div>
   );
-}
+};
 
 export default Dashboard;

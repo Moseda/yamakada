@@ -17,7 +17,7 @@ const Login = () => {
     const [loginStatus, setLoginStatus] = useState('')
     const [statusHolder, setStatusHolder] = useState('message')
     
-
+    //check if either of the fields are empty
     const validateForm = () => {
         const errors = {};
         if (!loginUsername.trim()) errors.username = 'Username is required';
@@ -39,11 +39,13 @@ const Login = () => {
             return;
         }
 
-
+        //chekc if both are missing (just for the status to be distinct)
         if (loginUsername === '' || loginPassword === '') {
             setLoginStatus('Username and password are required');
             return;
         }
+
+
         
         Axios.post('http://localhost:3002/login', {
             loginUsername: loginUsername,
@@ -53,7 +55,7 @@ const Login = () => {
 
             if (response.data.message) {
                 setLoginStatus(response.data.message ||'Login failed');
-            } else {
+            }else {
                 navigateTo('/dashboard');
             }
         }).catch((error) => {
@@ -64,14 +66,26 @@ const Login = () => {
     useEffect(()=>{
         if (loginStatus !== ''){
             setStatusHolder('show') //show meesage
-            setLoginStatus('Credentials don\'t match')
+            //setLoginStatus('Credentials don\'t match')
             setTimeout(()=>{
                 setStatusHolder('message') // hide it
             }, 4000);
         }
     }, [loginStatus])
 
-    const onSubmit = ()=>{
+    useEffect(() => {
+        // Check if user was redirected after email verification
+        const urlParams = new URLSearchParams(window.location.search);
+        const verified = urlParams.get('verified');
+        
+        if (verified === 'true') {
+            setLoginStatus('Email verified successfully! You can now log in.');
+            setStatusHolder('show');
+        }
+    }, []);
+
+    const onSubmit = (e)=>{
+        e.preventDefault();
         setLoginUsername('')
         setLoginPassword('')
     }

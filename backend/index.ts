@@ -1,7 +1,14 @@
+require('dotenv').config();
+
+
 const express = require ('express');
 const app = express();
+
 const mysql = require('mysql');
 const cors = require('cors');
+
+import sendEmail from "./mailer";
+
 
 app.use(express.json())
 app.use(cors())
@@ -37,12 +44,11 @@ app.post('/register', (req, res)=>{
     const sentUsername = req.body.Username
     const sentPassword = req.body.Password
 
-
+    // check if username and email used
     db.query('SELECT * FROM user WHERE email = ? OR username = ?', [sentEmail, sentUsername], (err, results) => {
         if (err) return res.status(500).send(err);
         
         if (results.length > 0) {
-            // User already exists
             const isEmailTaken = results.some(user => user.email === sentEmail);
             const isUsernameTaken = results.some(user => user.username === sentUsername);
             
@@ -59,22 +65,80 @@ app.post('/register', (req, res)=>{
         const bcrypt = require('bcrypt');
         const saltRounds = 10;
         bcrypt.hash(sentPassword, saltRounds, (err, hash) => {
-            const SQL = 'INSERT INTO user (email, username, password) VALUES (?, ?, ?)';
-            const values = [sentEmail, sentUsername, hash];
+            if (err) return res.status(500).send({ message: "Error hashing password" });
+
+            //confirmation token
+            const verification_token = jwt.sign({ email: sentEmail }, SECRET_KEY, { expiresIn: '1d' });
+
+
+            const SQL = 'INSERT INTO user (email, username, password, is_verified, verification_token) VALUES (?, ?, ?, ?, ?)';
+            const values = [sentEmail, sentUsername, hash, 0, verification_token];
 
             // Execute query
             db.query(SQL, values, (err, results)=>{
                 if(err){
-                    res.send(err)
+                    return res.status(500).send(err);
                 }else{
-                    console.log('user inserted check table in DB')
-                    res.send({message: 'User added'})
+
+                    //send a verification link
+                    const confirmationLink = `http://localhost:5173/verify/${verification_token}`;
+                    const emailHTML = `
+                    <h1>Welcome to Mimuco!</h1>
+                    <p>Thanks for signing up. Please verify your email by clicking the link below:</p>
+                    <a href="${confirmationLink}">Verify my email</a>
+                    `;
+                    
+                    sendEmail(
+                        sentEmail,
+                        "Verify Your Mimuco Account",
+                        `Please verify your email by visiting: ${confirmationLink}`,
+                        emailHTML
+                    )
+                    .then(() => {
+                        console.log(`Confirmation email sent to: ${sentEmail}`);
+                        return res.send({ message: 'User added. Please check your email to confirm your account.' });
+                    })
+                    .catch((err) => {
+                        console.error("Email failed", err);
+                        return res.status(500).send({ message: "Registration successful but verification email could not be sent. Please contact support." });
+                    });
+
                 }
             })
         });
     });
     
 });
+
+// for the verification of the email
+app.get('/verify/:token', (req, res) => {
+    const token = req.params.token;
+    
+    jwt.verify(token, SECRET_KEY, (err, decoded) => {
+        if (err) {
+            return res.status(400).send({ message: 'Invalid or expired verification token' });
+        }
+        
+        const email = decoded.email;
+        
+        db.query('UPDATE user SET is_verified = 1 WHERE email = ?', [email], (err, results) => {
+            if (err) {
+                return res.status(500).send({ message: 'Error updating user verification status' });
+            }
+            
+            if (results.affectedRows === 0) {
+                return res.send({ message: 'Email already verified.' });
+            }
+            
+            // Redirect to frontend with success message
+            res.send({ message: 'Email verified successfully!' });
+
+            //res.redirect('http://localhost:5173/?verified=true');
+        });
+    });
+});
+
+
 
 // let registred users log in (check if there credentials are in DB)
 
@@ -97,13 +161,17 @@ app.post('/login', (req, res)=>{
         }if(results.length > 0){
             const user = results[0]
 
+            if(user.is_verified === 0){
+                return res.send({message:'account not activated yet check your email'}) // the email hasnt been verified yet
+            }
+
             //hash the typed pass and compare it to the stored hash
             const bcrypt = require('bcrypt')
-            bcrypt.compare(sentLoginPassword, user.password, (err, isMatch)=>{
+            bcrypt.compare(sentLoginPassword, user.password, (err: any, isMatch: any)=>{
                 if (err){
                     return res.send({error:err})
                 }
-
+                
                 if(isMatch){
                     //passes matched
                     const token = jwt.sign({ id: user.id, username: user.username }, SECRET_KEY, { expiresIn: '1h' });
@@ -136,3 +204,4 @@ const verifyToken = (req, res, next) => {
 app.get('/protected-route', verifyToken, (req, res) => {
     res.send({ message: 'This is protected data' });
 })
+
