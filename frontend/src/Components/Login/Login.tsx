@@ -5,32 +5,24 @@ import MimucoLogo from "../../LoginAssets/MimucoLogo.png";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import { IoKey } from "react-icons/io5";
-import Axios from "axios";
+import api from "../../utils/api";
 
 const Login = () => {
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const navigateTo = useNavigate();
 
-  //login status
   const [loginStatus, setLoginStatus] = useState("");
   const [statusHolder, setStatusHolder] = useState("message");
 
-  //check if either of the fields are empty
   const validateForm = () => {
-    interface Errors {
-      username?: string;
-      password?: string;
-    }
-
-    const errors: Errors = {};
+    const errors: { username?: string; password?: string } = {};
     if (!loginUsername.trim()) errors.username = "Username is required";
     if (!loginPassword) errors.password = "Password is required";
     return errors;
   };
 
-  //for the onClick to get what the user typed
-  const loginUser = (
+  const loginUser = async (
     e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
@@ -38,52 +30,44 @@ const Login = () => {
     const errors = validateForm();
 
     if (Object.keys(errors).length > 0) {
-      setLoginStatus(Object.values(errors)[0]);
+      setLoginStatus(Object.values(errors)[0] || "");
       setStatusHolder("show");
       return;
     }
 
-    //check if both are missing (just for the status to be distinct)
-    if (loginUsername === "" || loginPassword === "") {
-      setLoginStatus("Username and password are required");
-      return;
-    }
-
-    Axios.post("http://localhost:3002/login", {
-      loginUsername: loginUsername,
-      loginPassword: loginPassword,
-    })
-      .then((response) => {
-        if (response.data.success) {
-          // Store the token
-          localStorage.setItem("token", response.data.token);
-          navigateTo("/dashboard");
-        } else {
-          // Handle error messages from the server
-          setLoginStatus(response.data.message || "Login failed");
-          setStatusHolder("show");
-        }
-      })
-      .catch((error) => {
-        // Handle network or server errors
-        setLoginStatus(
-          error.response?.data?.message || "Server error. Please try again."
-        );
-        setStatusHolder("show");
+    try {
+      const response = await api.post("/login", {
+        loginUsername,
+        loginPassword,
       });
+
+      if (response.data.success) {
+        localStorage.setItem("accessToken", response.data.token);
+        localStorage.setItem("refreshToken", response.data.refreshToken);
+        navigateTo("/dashboard");
+      } else {
+        setLoginStatus(response.data.message || "Login failed");
+        setStatusHolder("show");
+      }
+    } catch (error: any) {
+      setLoginStatus(
+        error.response?.data?.message || "Server error. Please try again."
+      );
+      setStatusHolder("show");
+    }
   };
 
   useEffect(() => {
     if (loginStatus !== "") {
-      setStatusHolder("show"); //show message
-      setTimeout(() => {
-        setStatusHolder("message"); // hide it
+      setStatusHolder("show");
+      const timer = setTimeout(() => {
+        setStatusHolder("message");
       }, 4000);
+      return () => clearTimeout(timer);
     }
   }, [loginStatus]);
 
   useEffect(() => {
-    // Check if user was redirected after email verification
     const urlParams = new URLSearchParams(window.location.search);
     const verified = urlParams.get("verified");
 

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import axios from "axios";
+import api from "../utils/api";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,33 +9,44 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true); // To prevent flickering during API call
 
   useEffect(() => {
     const verifyToken = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("accessToken");
+
       if (!token) {
+        console.log("No token found, setting isAuthenticated to false.");
         setIsAuthenticated(false);
+        setLoading(false);
         return;
       }
 
       try {
-        const response = await axios.get('http://localhost:3002/verify-token', {
-          headers: { Authorization: `Bearer ${token}` }
+        const response = await axios.get("http://localhost:3002/verify-token", {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setIsAuthenticated(response.data.isValid);
       } catch (error) {
-        console.error('Token verification failed', error);
+        console.error("Token verification failed", error);
         setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
       }
     };
 
     verifyToken();
   }, []);
 
-  if (isAuthenticated === null) {
-    return <div>Loading...</div>; // Or a loading spinner
+  if (loading) {
+    console.log("Loading state active, displaying loading message.");
+    return <div>Loading...</div>; // Prevent flashing before redirect
   }
 
+  console.log(
+    "Authentication check complete. isAuthenticated:",
+    isAuthenticated
+  );
   return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 };
 
