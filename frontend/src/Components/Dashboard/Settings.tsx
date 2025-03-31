@@ -37,7 +37,6 @@ const Settings: React.FC = () => {
     document.body.classList.remove("theme-light", "theme-dark");
     document.body.classList.add(`theme-${settings.theme}`);
 
-    // You could also set CSS variables here if using a custom theming approach
     // document.documentElement.style.setProperty('--background-color', settings.theme === 'dark' ? '#121212' : '#ffffff');
   }, [settings.theme]);
 
@@ -73,9 +72,13 @@ const Settings: React.FC = () => {
   const handleSettingChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, type, checked, value } = e.target;
+    const { name, type, value } = e.target;
 
-    // Update local state immediately for responsive UI
+    let checked: boolean | undefined;
+    if (e.target instanceof HTMLInputElement && type === "checkbox") {
+      checked = e.target.checked;
+    }
+
     const newSettings = {
       ...settings,
       [name]: type === "checkbox" ? checked : value,
@@ -83,7 +86,7 @@ const Settings: React.FC = () => {
 
     setSettings(newSettings);
 
-    // Show loading feedback (optional)
+    // Show loading
     setMessage({
       type: null,
       text: "Updating...",
@@ -130,7 +133,7 @@ const Settings: React.FC = () => {
         <Container>
           {/* Logo remains on the left */}
           <Navbar.Brand as={Link} to="/dashboard">
-            Mimuco Dashboard
+            Mimuco
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">

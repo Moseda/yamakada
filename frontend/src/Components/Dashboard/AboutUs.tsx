@@ -27,7 +27,7 @@ const AboutUs: React.FC = () => {
         <Container>
           {/* Logo remains on the left */}
           <Navbar.Brand as={Link} to="/dashboard">
-            Mimuco Dashboard
+            Mimuco
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse className="justify-content-end">
