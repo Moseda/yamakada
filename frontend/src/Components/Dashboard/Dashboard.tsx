@@ -8,8 +8,6 @@ import {
   Col,
   Form,
   Row,
-  ListGroup,
-  Table,
 } from "react-bootstrap";
 import { IoExitOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
@@ -250,6 +248,7 @@ const Dashboard = () => {
               backgroundColor: "#f8f9fa",
               borderRadius: "15px",
               transition: "transform 0.3s, box-shadow 0.3s",
+              zIndex: 10,
             }}
             onClick={navigateToProduct}
             onMouseOver={(e) => {
@@ -270,8 +269,6 @@ const Dashboard = () => {
               <div
                 className="bg-warning rounded-circle d-flex align-items-center justify-content-center mb-3"
                 style={{
-                  backgroundColor: "red",
-                  color: "red",
                   width: "60px",
                   height: "60px",
                 }}
@@ -293,6 +290,7 @@ const Dashboard = () => {
               backgroundColor: "#e3f2fd", // Light blue background
               borderRadius: "12px",
               transition: "transform 0.2s",
+              zIndex: 10,
             }}
           >
             <Card.Body>
@@ -353,6 +351,7 @@ const Dashboard = () => {
               backgroundColor: "#e8f5e9", // Light green background
               borderRadius: "12px",
               transition: "transform 0.2s",
+              zIndex: 10,
             }}
           >
             <Card.Body>
@@ -410,6 +409,7 @@ const Dashboard = () => {
               backgroundColor: "#fff3e0", // Light orange background
               borderRadius: "12px",
               transition: "transform 0.2s",
+              zIndex: 10,
             }}
           >
             <Card.Body>
@@ -460,114 +460,173 @@ const Dashboard = () => {
         </Container>
       </div>
 
-      {/*Arrows between boxes*/}
+      {/* Independent Curved Arrows */}
       <div className="connection-lines">
-        {/* Line to top box */}
+        {/* Top connection - Product to Marketplace */}
         <svg
           style={{
             position: "absolute",
-            top: "10%",
+            top: "19%",
             left: "50%",
-            height: "calc(60% - 10% - 100px)",
-            width: "2px",
+            transform: "translateX(-50%)",
+            width: "80px",
+            height: "140px",
             zIndex: 1,
             overflow: "visible",
           }}
         >
-          <defs>
-            <marker
-              id="arrowhead-top"
-              markerWidth="10"
-              markerHeight="7"
-              refX="0"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#4a90e2" />
-            </marker>
-          </defs>
-          <line
-            x1="1"
-            y1="0"
-            x2="1"
-            y2="100%"
+          {/* Import arrow (bottom to top) */}
+          <path
+            d="M0,150  0,24"
+            fill="none"
             stroke="#4a90e2"
             strokeWidth="2"
-            strokeDasharray="5,5"
-            markerEnd="url(#arrowhead-top)"
+            markerEnd="url(#arrow-top)"
           />
+
+          {/* Export arrow (top to bottom) */}
+          <path
+            d="M80,10  80,137"
+            fill="none"
+            stroke="#4a90e2"
+            strokeWidth="2"
+            markerEnd="url(#arrow-bottom)"
+          />
+
+          <defs>
+            {/* arrow-head (bottom to top) */}
+            <marker
+              id="arrow-top"
+              markerWidth="11"
+              markerHeight="7"
+              refX="5"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+            </marker>
+            <marker
+              id="arrow-bottom"
+              markerWidth="11"
+              markerHeight="7"
+              refX="5"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+            </marker>
+          </defs>
         </svg>
 
-        {/* Line to left box */}
+        {/* Left connection - Product to Shop */}
         <svg
           style={{
             position: "absolute",
-            top: "60%",
-            left: "calc(10% + 220px)",
-            width: "calc(50% - 10% - 220px - 150px)",
-            height: "2px",
+            top: "35%",
+            left: "32%",
+            transform: "translateY(-50%)",
+            width: "140px",
+            height: "80px",
             zIndex: 1,
             overflow: "visible",
           }}
         >
-          <defs>
-            <marker
-              id="arrowhead-left"
-              markerWidth="10"
-              markerHeight="7"
-              refX="0"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#43b581" />
-            </marker>
-          </defs>
-          <line
-            x1="0"
-            y1="1"
-            x2="100%"
-            y2="1"
+          {/* Import arrow (right to left) */}
+          <path
+            d="M160,60  5,60"
+            fill="none"
             stroke="#43b581"
             strokeWidth="2"
-            strokeDasharray="5,5"
-            markerEnd="url(#arrowhead-left)"
+            markerEnd="url(#arrow-left)"
           />
+
+          {/* Export arrow (left to right) */}
+          <path
+            d="M-10,0  140,0"
+            fill="none"
+            stroke="#43b581"
+            strokeWidth="2"
+            markerEnd="url(#arrow-right)"
+          />
+
+          <defs>
+            {/* arrow-head (center to left) */}
+            <marker
+              id="arrow-left"
+              markerWidth="11"
+              markerHeight="7"
+              refX="5"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+            </marker>
+            <marker
+              id="arrow-right"
+              markerWidth="11"
+              markerHeight="7"
+              refX="5"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+            </marker>
+          </defs>
         </svg>
 
-        {/* Line to right box */}
+        {/* Right connection - Product to Manufacturer */}
         <svg
           style={{
             position: "absolute",
-            top: "60%",
-            right: "calc(10% + 220px)",
-            width: "calc(50% - 10% - 220px - 150px)",
-            height: "2px",
+            top: "35%",
+            right: "32%",
+            transform: "translateY(-50%)",
+            width: "140px",
+            height: "80px",
             zIndex: 1,
             overflow: "visible",
           }}
         >
+          {/* Import arrow (left to right) */}
+          <path
+            d="M-20,0 135,0"
+            fill="none"
+            stroke="#faa61a"
+            strokeWidth="2"
+            markerEnd="url(#arrow-right-orange)"
+          />
+
+          {/* Export arrow (right to left) */}
+          <path
+            d="M150,60 0,60"
+            fill="none"
+            stroke="#faa61a"
+            strokeWidth="2"
+            markerEnd="url(#arrow-left-orange)"
+          />
+
           <defs>
             <marker
-              id="arrowhead-right"
-              markerWidth="10"
+              id="arrow-right-orange"
+              markerWidth="11"
               markerHeight="7"
-              refX="0"
+              refX="5"
               refY="3.5"
               orient="auto"
             >
-              <polygon points="0 0, 10 3.5, 0 7" fill="#faa61a" />
+              <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
+            </marker>
+            <marker
+              id="arrow-left-orange"
+              markerWidth="11"
+              markerHeight="7"
+              refX="5"
+              refY="3.5"
+              orient="auto"
+            >
+              <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
             </marker>
           </defs>
-          <line
-            x1="100%"
-            y1="1"
-            x2="0"
-            y2="1"
-            stroke="#faa61a"
-            strokeWidth="2"
-            strokeDasharray="5,5"
-            markerEnd="url(#arrowhead-right)"
-          />
         </svg>
       </div>
 

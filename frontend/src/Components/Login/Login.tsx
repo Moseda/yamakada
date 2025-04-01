@@ -10,6 +10,7 @@ import api from "../../utils/api";
 const Login = () => {
   const [loginUsername, setLoginUsername] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+
   const navigateTo = useNavigate();
 
   const [loginStatus, setLoginStatus] = useState("");
@@ -123,7 +124,7 @@ const Login = () => {
           </div>
 
           {/* Form */}
-          <form className="w-75" onSubmit={onSubmit}>
+          <form className="w-75" onSubmit={loginUser}>
             <div className="mb-3" style={{ textAlign: "center" }}>
               <span
                 className={`alert alert-info alert-dismissible fade ${statusHolder}`}
@@ -175,11 +176,7 @@ const Login = () => {
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
-              className="btn btn-primary w-100"
-              onClick={loginUser}
-            >
+            <button type="submit" className="btn btn-primary w-100">
               Login
             </button>
 
