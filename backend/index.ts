@@ -9,12 +9,23 @@ import jwt from "jsonwebtoken";
 import db from "./db"; // Import database connection
 import sendEmail from "./mailer";
 import { verifyToken } from "./Middlewares/auth";
-import settingsRouter from "./routes/Settings";
+import settingsRouter from "./routes/settings";
 import productRouter from "./routes/categorizer";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://192.168.0.144:5173",
+      "http://192.168.56.1:5173",
+      "http://172.19.240.1:5173",
+    ],
+    credentials: true,
+  })
+);
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -22,8 +33,20 @@ if (!SECRET_KEY) {
   throw new Error("SECRET_KEY environment variable is not set");
 }
 
+app.get("/test", (req, res) => {
+  res.json({
+    message: "Backend is accessible!",
+    clientIP: req.ip,
+  });
+});
+
 // Start server
-app.listen(3002, () => console.log("Server running on port 3002"));
+app.listen(3002, "0.0.0.0", () => {
+  console.log("Server running on all interfaces at port 3002");
+  console.log("Try connecting at:");
+  console.log(`- http://localhost:3002`);
+  console.log(`- http://192.168.0.144:3002`);
+});
 
 // User registration
 app.post("/register", async (req: Request, res: Response): Promise<any> => {
@@ -73,7 +96,7 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
     );
 
     // Send verification email
-    const confirmationLink = `http://localhost:5173/verify/${verificationToken}`;
+    const confirmationLink = `http://192.168.0.144:5173/verify/${verificationToken}`;
     const emailHTML = `
             <h1>Welcome to Mimuco!</h1>
             <p>Thanks for signing up. Please verify your email:</p>
@@ -129,14 +152,14 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
   try {
     const [users]: any = await db.query(
-      "SELECT * FROM user WHERE username = ?",
-      [loginUsername]
+      "SELECT * FROM user WHERE username = ? OR email = ?",
+      [loginUsername, loginUsername]
     );
 
     //console.log("Users Found:", users); // Add this for debugging
 
     if (users.length === 0) {
-      res.status(401).json({ message: "Invalid username or password" });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
@@ -156,14 +179,14 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
     //console.log("Password Match:", isMatch); // Add this for debugging
 
     if (!isMatch) {
-      res.status(401).json({ message: "Invalid username or password" });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
-
+    //------------------------------------maybe us either the emai or the username test first
     const accessToken = jwt.sign(
       { id: user.id, username: user.username },
       SECRET_KEY,
-      { expiresIn: "1h" }
+      { expiresIn: "4h" }
     );
 
     const refreshToken = jwt.sign({ id: user.id }, SECRET_KEY, {
@@ -177,7 +200,7 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     res.json({
       success: true,
-      token: accessToken, // Match frontend expectation
+      token: accessToken, // Match frontend expectation because i name them diffent all the time...
       refreshToken,
     });
   } catch (err) {

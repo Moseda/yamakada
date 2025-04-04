@@ -23,9 +23,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       }
 
       try {
-        const response = await axios.get("http://localhost:3002/verify-token", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "http://192.168.0.144:3002/verify-token",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setIsAuthenticated(response.data.isValid);
       } catch (error) {
         console.error("Token verification failed", error);

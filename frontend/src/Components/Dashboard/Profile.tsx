@@ -7,13 +7,11 @@ import {
   Button,
   Form,
   Alert,
-  Dropdown,
-  Navbar,
 } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaEnvelope, FaCog, FaSignOutAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { FaUser, FaCog, FaSignOutAlt } from "react-icons/fa";
 import axios from "axios";
-import { IoExitOutline } from "react-icons/io5";
+import NavbarComponent from "./NavbarComponent";
 
 interface UserProfile {
   username: string;
@@ -68,9 +66,12 @@ const Profile: React.FC = () => {
           return;
         }
 
-        const response = await axios.get("http://localhost:3002/user/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const response = await axios.get(
+          "http://192.168.0.144:3002/user/profile",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
 
         const userData = response.data;
         setProfile({
@@ -116,7 +117,7 @@ const Profile: React.FC = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const response = await axios.put(
-        "http://localhost:3002/user/profile",
+        "http://192.168.0.144:3002/user/profile",
         editedProfile,
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -160,61 +161,8 @@ const Profile: React.FC = () => {
 
   return (
     <div>
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          {/* Logo remains on the left */}
-          <Navbar.Brand as={Link} to="/dashboard">
-            Mimuco
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse className="justify-content-end">
-            {/* User Avatar with Dropdown */}
-            <Dropdown align="end">
-              <Dropdown.Toggle
-                variant="light"
-                id="dropdown-basic"
-                className="d-flex align-items-center"
-                style={{
-                  //TOBE CHANGED?? ::::::::::::::::::: either have a color for each page or a fixed for the user or randomfromListLike dashboard ::::::::::::::::::::::
-                  backgroundColor: "blue",
-                  border: "none",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-
-                //TOBE CHANGED ::::::::::::::::::: the S is the initial for the username ::::::::::::::::::::::
-              >
-                {"S"}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item as={Link} to="/dashboard/profile">
-                  Profile
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/settings">
-                  Settings
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/about-us">
-                  About Us
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/categorizer">
-                  Categorizer
-                </Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item
-                  as={Button}
-                  className="d-flex align-items-center"
-                  onClick={handleLogout}
-                >
-                  <IoExitOutline className="me-2" /> Logout
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      {/* Navbar */}
+      <NavbarComponent />
       <Container className="mt-5">
         <Row className="justify-content-center">
           <Col md={8} lg={6}>

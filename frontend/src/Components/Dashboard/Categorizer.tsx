@@ -13,19 +13,10 @@ import {
   InputGroup,
   Spinner,
   Alert,
-  Navbar,
 } from "react-bootstrap";
-import {
-  FaFilter,
-  FaSearch,
-  FaTags,
-  FaSort,
-  FaDownload,
-  FaPlus,
-} from "react-icons/fa";
+import { FaFilter, FaSearch, FaTags } from "react-icons/fa";
 import axios from "axios";
-import { IoExitOutline } from "react-icons/io5";
-import { Link, useNavigate } from "react-router-dom";
+import NavbarComponent from "./NavbarComponent";
 
 interface Product {
   id: number;
@@ -91,7 +82,7 @@ const ProductCategorizer: React.FC = () => {
 
         // Fetch all required data
         const [productsRes, manufacturersRes, channelsRes] = await Promise.all([
-          axios.get("http://localhost:3002/api/products", {
+          axios.get("http://192.168.0.144:3002/api/products", {
             headers: { Authorization: `Bearer ${token}` },
             params: {
               page: currentPage,
@@ -103,10 +94,10 @@ const ProductCategorizer: React.FC = () => {
               direction: sortDirection,
             },
           }),
-          axios.get("http://localhost:3002/api/manufacturers", {
+          axios.get("http://192.168.0.144:3002/api/manufacturers", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:3002/api/channels", {
+          axios.get("http://192.168.0.144:3002/api/channels", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -171,7 +162,7 @@ const ProductCategorizer: React.FC = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.post(
-        "http://localhost:3002/api/products/bulk",
+        "http://192.168.0.144:3002/api/products/bulk",
         {
           productIds: selectedProducts,
           action: bulkAction,
@@ -238,68 +229,10 @@ const ProductCategorizer: React.FC = () => {
     }
   }
 
-  const navigate = useNavigate();
-
-  const Logout = () => {
-    localStorage.removeItem("accessToken");
-    navigate("/");
-  };
-
   return (
     <div>
       {/* Navbar */}
-      <Navbar bg="dark" variant="dark" expand="lg">
-        <Container>
-          {/* Logo remains on the left */}
-          <Navbar.Brand as={Link} to="/dashboard">
-            Mimuco
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse className="justify-content-end">
-            {/* User Avatar with Dropdown */}
-            <Dropdown align="end">
-              <Dropdown.Toggle
-                variant="light"
-                id="dropdown-basic"
-                className="d-flex align-items-center"
-                style={{
-                  backgroundColor: "blue",
-                  border: "none",
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "50%",
-                  fontWeight: "bold",
-                  color: "white",
-                }}
-              >
-                {"S"}
-              </Dropdown.Toggle>
-              <Dropdown.Menu>
-                <Dropdown.Item as={Link} to="/dashboard/profile">
-                  Profile
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/settings">
-                  Settings
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/about-us">
-                  About Us
-                </Dropdown.Item>
-                <Dropdown.Item as={Link} to="/dashboard/categorizer">
-                  Categorizer
-                </Dropdown.Item>
-                <Dropdown.Divider />
-                <Dropdown.Item
-                  as={Button}
-                  className="d-flex align-items-center"
-                  onClick={Logout}
-                >
-                  <IoExitOutline className="me-2" /> Logout
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
+      <NavbarComponent />
       <Container fluid className="mt-4">
         <Card className="shadow-sm">
           <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">

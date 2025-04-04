@@ -137,7 +137,7 @@ const Login = () => {
             {/* Username Input */}
             <div className="mb-3">
               <label htmlFor="username" className="form-label">
-                Username
+                Username/Email
               </label>
               <div className="input-group">
                 <span className="input-group-text">
@@ -146,7 +146,7 @@ const Login = () => {
                 <input
                   type="text"
                   id="username"
-                  placeholder="Enter Username"
+                  placeholder="Enter Username or Email"
                   className="form-control"
                   onChange={(event) => {
                     setLoginUsername(event.target.value);

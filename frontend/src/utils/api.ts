@@ -1,7 +1,7 @@
 // File: frontend\src\utils\api.ts
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3002";
+const BASE_URL = "http://192.168.0.144:3002";
 
 const api = axios.create({
   baseURL: BASE_URL,

@@ -1,29 +1,27 @@
-import { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import video from '../../LoginAssets/video.mp4';
-import MimucoLogo from '../../LoginAssets/MimucoLogo.png';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaUser, FaEnvelope } from 'react-icons/fa';
+import { useState } from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import video from "../../LoginAssets/video.mp4";
+import MimucoLogo from "../../LoginAssets/MimucoLogo.png";
+import { Link, useNavigate } from "react-router-dom";
+import { FaUser, FaEnvelope } from "react-icons/fa";
 import { IoKey } from "react-icons/io5";
-import Axios from 'axios';
+import Axios from "axios";
 
 const Register = () => {
   // State for form inputs
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   //redirecting func
   const navigateTo = useNavigate();
 
   // State for error and success messages
-  const [registerStatus, setRegisterStatus] = useState('');
+  const [registerStatus, setRegisterStatus] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<String[]>([]);
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [emailErrors, setEmailErrors] = useState<string[]>([]);
-
-
 
   //State for validity of flieds
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -34,39 +32,38 @@ const Register = () => {
   //validate email regex
   const validateEmail = (email: string): string[] => {
     const errors: string[] = [];
-    if (!email.includes('@')) {
-      errors.push('Email must contain an @ sign');
-    }
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.push('Invalid email');
+    if (!email.includes("@")) {
+      errors.push("Email must contain an @ sign");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.push("Invalid email");
     }
     return errors;
   };
 
-  // Validate password regex 
+  // Validate password regex
   const validatePassword = (password: string) => {
     const errors = [];
-    if (password.length < 8) errors.push('Password must be at least 8 characters');
-    if (!/[A-Z]/.test(password)) errors.push('Password must contain an uppercase letter');
-    if (!/[a-z]/.test(password)) errors.push('Password must contain a lowercase letter');
-    if (!/[0-9]/.test(password)) errors.push('Password must contain a number');
+    if (password.length < 8)
+      errors.push("Password must be at least 8 characters");
+    if (!/[A-Z]/.test(password))
+      errors.push("Password must contain an uppercase letter");
+    if (!/[a-z]/.test(password))
+      errors.push("Password must contain a lowercase letter");
+    if (!/[0-9]/.test(password)) errors.push("Password must contain a number");
     return errors;
   };
 
-  const createUser = (e: { preventDefault: () => void; }) => {
+  const createUser = (e: { preventDefault: () => void }) => {
     e.preventDefault();
 
     // Clear previous statuses
-    setRegisterStatus('');
+    setRegisterStatus("");
     setPasswordErrors([]);
-    setConfirmPasswordError('');
-  
-    
-
+    setConfirmPasswordError("");
 
     // Check if all fields are filled
     if (!email || !username || !password || !confirmPassword) {
-      setRegisterStatus('All fields are required');
+      setRegisterStatus("All fields are required");
       //check validity
       setIsEmailValid(!!email);
       setIsUsernameValid(!!username);
@@ -77,10 +74,9 @@ const Register = () => {
     }
 
     //validate Email
-     
 
     // Validate password
-    const errors : String[] = validatePassword(password);
+    const errors: String[] = validatePassword(password);
     if (errors.length > 0) {
       setPasswordErrors(errors);
       setIsPasswordValid(false);
@@ -89,30 +85,31 @@ const Register = () => {
 
     // Validate confirm password
     if (password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
+      setConfirmPasswordError("Passwords do not match");
       setIsConfirmPasswordValid(false);
       return;
     }
 
-    
-    setRegisterStatus('Registration successful!');
+    setRegisterStatus("Registration successful!");
     // API request using Axios
-    Axios.post('http://localhost:3002/register', {
+    Axios.post("http://192.168.0.144:3002/register", {
       Email: email,
       Username: username,
       Password: password,
     })
       .then(() => {
         // Clear all fields
-        setEmail('');
-        setUsername('');
-        setPassword('');
-        setConfirmPassword('');
+        setEmail("");
+        setUsername("");
+        setPassword("");
+        setConfirmPassword("");
         // Navigate to login after a delay
-        setTimeout(() => navigateTo('/'), 1);
+        setTimeout(() => navigateTo("/"), 1);
       })
       .catch((error) => {
-        setRegisterStatus(error.response?.data?.message || 'Registration failed');
+        setRegisterStatus(
+          error.response?.data?.message || "Registration failed"
+        );
       });
   };
 
@@ -236,17 +233,16 @@ const Register = () => {
                       : {}
                   }
                 />
-                
               </div>
               {emailErrors.length > 0 && (
-                  <div className="text-danger mt-1">
-                    <ul>
-                      {emailErrors.map((error, index) => (
-                        <li key={index}>{error}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                <div className="text-danger mt-1">
+                  <ul>
+                    {emailErrors.map((error, index) => (
+                      <li key={index}>{error}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {/* Password Input */}
