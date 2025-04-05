@@ -19,7 +19,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "http://192.168.0.144:5173",
+      `${process.env.FRONTEND_URL}`,
       "http://192.168.56.1:5173",
       "http://172.19.240.1:5173",
     ],
@@ -33,19 +33,12 @@ if (!SECRET_KEY) {
   throw new Error("SECRET_KEY environment variable is not set");
 }
 
-app.get("/test", (req, res) => {
-  res.json({
-    message: "Backend is accessible!",
-    clientIP: req.ip,
-  });
-});
-
 // Start server
 app.listen(3002, "0.0.0.0", () => {
   console.log("Server running on all interfaces at port 3002");
   console.log("Try connecting at:");
   console.log(`- http://localhost:3002`);
-  console.log(`- http://192.168.0.144:3002`);
+  console.log(`- ${process.env.API_URL}`);
 });
 
 // User registration
@@ -96,7 +89,7 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
     );
 
     // Send verification email
-    const confirmationLink = `http://192.168.0.144:5173/verify/${verificationToken}`;
+    const confirmationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
     const emailHTML = `
             <h1>Welcome to Mimuco!</h1>
             <p>Thanks for signing up. Please verify your email:</p>
@@ -148,7 +141,7 @@ app.get(
 app.post("/login", async (req: Request, res: Response): Promise<void> => {
   const { loginUsername, loginPassword } = req.body;
 
-  //console.log("Login Attempt:", { loginUsername, loginPassword }); // Add this
+  console.log("Login Attempt:", { loginUsername, loginPassword }); // Add this
 
   try {
     const [users]: any = await db.query(
@@ -208,6 +201,50 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Internal server error" });
   }
 });
+
+// after verify-token endpoint in backend/index.ts
+app.post(
+  "/reset-password",
+  async (req: Request, res: Response): Promise<any> => {
+    const { email } = req.body;
+
+    try {
+      const [users]: any = await db.query(
+        "SELECT * FROM user WHERE email = ?",
+        [email]
+      );
+
+      if (users.length === 0) {
+        return res.status(404).json({ message: "Email not found" });
+      }
+
+      const user = users[0];
+      const resetToken = jwt.sign({ email: user.email }, SECRET_KEY, {
+        expiresIn: "1h",
+      });
+
+      const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+
+      const emailHTML = `
+      <h2>Password Reset</h2>
+      <p>Click below to reset your password:</p>
+      <a href="${resetLink}">${resetLink}</a>
+    `;
+
+      await sendEmail(
+        email,
+        "Reset Your Password",
+        `Reset link: ${resetLink}`,
+        emailHTML
+      );
+
+      res.json({ message: "Password reset link sent" });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
 
 app.get("/verify-token", verifyToken, (req: any, res: any) => {
   res.json({ isValid: true, user: (req as any).user });

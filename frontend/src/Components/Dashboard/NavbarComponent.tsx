@@ -5,11 +5,11 @@ import Axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { IoExitOutline } from "react-icons/io5";
 import mimuco_4 from "../../LoginAssets/mimuco_4.png"; // Adjust the path as necessary
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const NavbarComponent = () => {
   const [userName, setUserName] = useState(""); // State to store username
   const [avatarColor, setAvatarColor] = useState(""); // Avatar color
-
   const navigate = useNavigate();
 
   const colors = [
@@ -40,12 +40,9 @@ const NavbarComponent = () => {
         }
 
         // Fetch user data from /verify-token
-        const response = await Axios.get(
-          "http://192.168.0.144:3002/verify-token",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await Axios.get(`${apiUrl}/verify-token`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (response.data.isValid) {
           setUserName(response.data.user.username); // Use username from token

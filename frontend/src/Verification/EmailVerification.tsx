@@ -1,3 +1,5 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -12,7 +14,7 @@ const EmailVerification = () => {
   const [status, setStatus] = useState("Verifying your email...");
 
   useEffect(() => {
-    Axios.get(`http://192.168.0.144:3002/verify/${token}`)
+    Axios.get(`${process.env.API_URL}/verify/${token}`)
       .then(() => {
         setStatus("Email verified successfully! Redirecting to login...");
         setTimeout(() => navigate("/?verified=true"), 3000);

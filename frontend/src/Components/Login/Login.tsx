@@ -78,10 +78,10 @@ const Login = () => {
     }
   }, []);
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    loginUser(e);
-  };
+  // const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   loginUser(e);
+  // };
 
   return (
     <div className="d-flex vh-100">
@@ -182,7 +182,7 @@ const Login = () => {
 
             {/*forgot password*/}
             <span className="forgotPassword">
-              <a href="">Forgot password?</a>
+              <a href="/reset-password">Forgot password?</a>
             </span>
           </form>
         </div>

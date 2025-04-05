@@ -1,3 +1,5 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -66,12 +68,9 @@ const Profile: React.FC = () => {
           return;
         }
 
-        const response = await axios.get(
-          "http://192.168.0.144:3002/user/profile",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`${apiUrl}/user/profile`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         const userData = response.data;
         setProfile({
@@ -115,12 +114,12 @@ const Profile: React.FC = () => {
 
   const handleSaveProfile = async () => {
     try {
-      const token = localStorage.getItem("accessToken");
-      const response = await axios.put(
-        "http://192.168.0.144:3002/user/profile",
-        editedProfile,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      //const token = localStorage.getItem("accessToken");
+      // const response = await axios.put(
+      //   "http://192.168.0.144:3002/user/profile",
+      //   editedProfile,
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
 
       setProfile(editedProfile);
       setIsEditing(false);

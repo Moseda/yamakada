@@ -10,6 +10,7 @@ import Settings from "./Components/Dashboard/Settings";
 import Categorizer from "./Components/Dashboard/Categorizer";
 import AboutUs from "./Components/Dashboard/AboutUs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import ResetPassword from "./Components/ResetPassword/ResetPassword";
 
 const router = createBrowserRouter([
   {
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPassword />,
   },
   {
     path: "/dashboard",

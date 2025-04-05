@@ -1,7 +1,9 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 // File: frontend\src\utils\api.ts
 import axios from "axios";
 
-const BASE_URL = "http://192.168.0.144:3002";
+const BASE_URL = `${apiUrl}`;
 
 const api = axios.create({
   baseURL: BASE_URL,

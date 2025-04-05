@@ -1,7 +1,8 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import axios from "axios";
-import api from "../utils/api";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -23,12 +24,9 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       }
 
       try {
-        const response = await axios.get(
-          "http://192.168.0.144:3002/verify-token",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`${apiUrl}/verify-token`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setIsAuthenticated(response.data.isValid);
       } catch (error) {
         console.error("Token verification failed", error);

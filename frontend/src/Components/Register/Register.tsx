@@ -1,3 +1,4 @@
+const apiUrl = import.meta.env.VITE_API_URL;
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import video from "../../LoginAssets/video.mp4";
@@ -92,7 +93,7 @@ const Register = () => {
 
     setRegisterStatus("Registration successful!");
     // API request using Axios
-    Axios.post("http://192.168.0.144:3002/register", {
+    Axios.post(`${apiUrl}/register`, {
       Email: email,
       Username: username,
       Password: password,

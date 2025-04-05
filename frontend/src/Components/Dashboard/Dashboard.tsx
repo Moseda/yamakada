@@ -13,12 +13,16 @@ import NavbarComponent from "./NavbarComponent";
 
 const Dashboard = () => {
   // Sample data for dropdowns
-  const [shops, setShops] = useState(["Shop 1", "Shop 2", "Shop 3"]);
-  const [manufacturers, setManufacturers] = useState([
+  const [shops /*setShops*/] = useState(["Shop 1", "Shop 2", "Shop 3"]);
+  const [manufacturers /*setManufacturers*/] = useState([
     "Hersteller 1",
     "Hersteller 2",
   ]);
-  const [marketplaces, setMarketplaces] = useState(["Amazon", "eBay", "Otto"]);
+  const [marketplaces /*setMarketplaces*/] = useState([
+    "Amazon",
+    "eBay",
+    "Otto",
+  ]);
 
   // Selected items in dropdowns
   const [selectedShop, setSelectedShop] = useState("");
@@ -110,7 +114,6 @@ const Dashboard = () => {
       <div>
         {/* Navbar */}
         <NavbarComponent />
-
         {/* Main Layout */}
         <Container
           className="mt-4 position-relative"
@@ -339,165 +342,167 @@ const Dashboard = () => {
               </div>
             </Card.Body>
           </Card>
+          {/* Independent Curved Arrows */}
+          <div className="connection-lines position-relative">
+            {/* Top connection - Product to Marketplace */}
+            <svg
+              style={{
+                position: "relative",
+                top: "230px",
+                left: "600px",
+                zIndex: 1,
+                overflow: "visible",
+              }}
+            >
+              {/* Import arrow (bottom to top) */}
+              <path
+                d="M0,150  0,24"
+                fill="none"
+                stroke="#4a90e2"
+                strokeWidth="2"
+                markerEnd="url(#arrow-top)"
+              />
+
+              {/* Export arrow (top to bottom) */}
+              <path
+                d="M80,10  80,137"
+                fill="none"
+                stroke="#4a90e2"
+                strokeWidth="2"
+                markerEnd="url(#arrow-bottom)"
+              />
+
+              <defs>
+                {/* arrow-head (bottom to top) */}
+                <marker
+                  id="arrow-top"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+                </marker>
+                <marker
+                  id="arrow-bottom"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+                </marker>
+              </defs>
+            </svg>
+
+            {/* Left connection - Product to Shop */}
+            <svg
+              style={{
+                position: "relative",
+                top: "450px",
+                left: "46px",
+                zIndex: 1,
+                overflow: "visible",
+              }}
+            >
+              {/* Import arrow (right to left) */}
+              <path
+                d="M160,60  5,60"
+                fill="none"
+                stroke="#43b581"
+                strokeWidth="2"
+                markerEnd="url(#arrow-left)"
+              />
+
+              {/* Export arrow (left to right) */}
+              <path
+                d="M-10,0  140,0"
+                fill="none"
+                stroke="#43b581"
+                strokeWidth="2"
+                markerEnd="url(#arrow-right)"
+              />
+
+              <defs>
+                {/* arrow-head (center to left) */}
+                <marker
+                  id="arrow-left"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+                </marker>
+                <marker
+                  id="arrow-right"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+                </marker>
+              </defs>
+            </svg>
+
+            {/* Right connection - Product to Manufacturer */}
+            <svg
+              style={{
+                position: "relative",
+                top: "450px",
+                left: "210px",
+                zIndex: 1,
+                overflow: "visible",
+              }}
+            >
+              {/* Import arrow (left to right) */}
+              <path
+                d="M-20,0 135,0"
+                fill="none"
+                stroke="#faa61a"
+                strokeWidth="2"
+                markerEnd="url(#arrow-right-orange)"
+              />
+
+              {/* Export arrow (right to left) */}
+              <path
+                d="M150,60 0,60"
+                fill="none"
+                stroke="#faa61a"
+                strokeWidth="2"
+                markerEnd="url(#arrow-left-orange)"
+              />
+
+              <defs>
+                <marker
+                  id="arrow-right-orange"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
+                </marker>
+                <marker
+                  id="arrow-left-orange"
+                  markerWidth="11"
+                  markerHeight="7"
+                  refX="5"
+                  refY="3.5"
+                  orient="auto"
+                >
+                  <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
+                </marker>
+              </defs>
+            </svg>
+          </div>
         </Container>
-      </div>
-
-      {/* Independent Curved Arrows */}
-      <div className="connection-lines position-absolute">
-        {/* Top connection - Product to Marketplace */}
-        <svg
-          style={{
-            position: "absolute",
-            transform: "translateX(240%) translateY(-379%)",
-            zIndex: 1,
-            overflow: "visible",
-          }}
-        >
-          {/* Import arrow (bottom to top) */}
-          <path
-            d="M0,150  0,24"
-            fill="none"
-            stroke="#4a90e2"
-            strokeWidth="2"
-            markerEnd="url(#arrow-top)"
-          />
-
-          {/* Export arrow (top to bottom) */}
-          <path
-            d="M80,10  80,137"
-            fill="none"
-            stroke="#4a90e2"
-            strokeWidth="2"
-            markerEnd="url(#arrow-bottom)"
-          />
-
-          <defs>
-            {/* arrow-head (bottom to top) */}
-            <marker
-              id="arrow-top"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
-            </marker>
-            <marker
-              id="arrow-bottom"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
-            </marker>
-          </defs>
-        </svg>
-
-        {/* Left connection - Product to Shop */}
-        <svg
-          style={{
-            position: "absolute",
-            transform: "translateX(151.5%) translateY(-230%)",
-            zIndex: 1,
-            overflow: "visible",
-          }}
-        >
-          {/* Import arrow (right to left) */}
-          <path
-            d="M160,60  5,60"
-            fill="none"
-            stroke="#43b581"
-            strokeWidth="2"
-            markerEnd="url(#arrow-left)"
-          />
-
-          {/* Export arrow (left to right) */}
-          <path
-            d="M-10,0  140,0"
-            fill="none"
-            stroke="#43b581"
-            strokeWidth="2"
-            markerEnd="url(#arrow-right)"
-          />
-
-          <defs>
-            {/* arrow-head (center to left) */}
-            <marker
-              id="arrow-left"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
-            </marker>
-            <marker
-              id="arrow-right"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
-            </marker>
-          </defs>
-        </svg>
-
-        {/* Right connection - Product to Manufacturer */}
-        <svg
-          style={{
-            position: "absolute",
-            transform: "translateX(306%) translateY(-230%)",
-            zIndex: 1,
-            overflow: "visible",
-          }}
-        >
-          {/* Import arrow (left to right) */}
-          <path
-            d="M-20,0 135,0"
-            fill="none"
-            stroke="#faa61a"
-            strokeWidth="2"
-            markerEnd="url(#arrow-right-orange)"
-          />
-
-          {/* Export arrow (right to left) */}
-          <path
-            d="M150,60 0,60"
-            fill="none"
-            stroke="#faa61a"
-            strokeWidth="2"
-            markerEnd="url(#arrow-left-orange)"
-          />
-
-          <defs>
-            <marker
-              id="arrow-right-orange"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
-            </marker>
-            <marker
-              id="arrow-left-orange"
-              markerWidth="11"
-              markerHeight="7"
-              refX="5"
-              refY="3.5"
-              orient="auto"
-            >
-              <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
-            </marker>
-          </defs>
-        </svg>
       </div>
 
       {/*added last Bestellung*/}

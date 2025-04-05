@@ -1,3 +1,5 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -47,12 +49,9 @@ const Settings: React.FC = () => {
           return;
         }
 
-        const response = await axios.get(
-          "http://192.168.0.144:3002/user/settings",
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
+        const response = await axios.get(`${apiUrl}/user/settings`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         setSettings(response.data);
       } catch (error) {
@@ -93,7 +92,7 @@ const Settings: React.FC = () => {
     // Send update to server
     try {
       const token = localStorage.getItem("accessToken");
-      await axios.put("http://192.168.0.144:3002/user/settings", newSettings, {
+      await axios.put(`${apiUrl}/user/settings`, newSettings, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

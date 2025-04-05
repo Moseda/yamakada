@@ -1,3 +1,5 @@
+const apiUrl = import.meta.env.VITE_API_URL;
+
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -82,7 +84,7 @@ const ProductCategorizer: React.FC = () => {
 
         // Fetch all required data
         const [productsRes, manufacturersRes, channelsRes] = await Promise.all([
-          axios.get("http://192.168.0.144:3002/api/products", {
+          axios.get(`${apiUrl}/api/products`, {
             headers: { Authorization: `Bearer ${token}` },
             params: {
               page: currentPage,
@@ -94,10 +96,10 @@ const ProductCategorizer: React.FC = () => {
               direction: sortDirection,
             },
           }),
-          axios.get("http://192.168.0.144:3002/api/manufacturers", {
+          axios.get(`${apiUrl}/api/manufacturers`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://192.168.0.144:3002/api/channels", {
+          axios.get(`${apiUrl}/api/channels`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -162,7 +164,7 @@ const ProductCategorizer: React.FC = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.post(
-        "http://192.168.0.144:3002/api/products/bulk",
+        `${apiUrl}/api/products/bulk`,
         {
           productIds: selectedProducts,
           action: bulkAction,
