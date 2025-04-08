@@ -16,7 +16,6 @@ import axios from "axios";
 import NavbarComponent from "./NavbarComponent";
 
 interface UserProfile {
-  username: string;
   email: string;
   avatarColor: string;
 }
@@ -41,13 +40,11 @@ const Profile: React.FC = () => {
 
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile>({
-    username: "",
     email: "",
     avatarColor: colors[Math.floor(Math.random() * colors.length)],
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<UserProfile>({
-    username: "",
     email: "",
     avatarColor: colors[Math.floor(Math.random() * colors.length)],
   });
@@ -74,12 +71,10 @@ const Profile: React.FC = () => {
 
         const userData = response.data;
         setProfile({
-          username: userData.username,
           email: userData.email,
           avatarColor: colors[Math.floor(Math.random() * colors.length)],
         });
         setEditedProfile({
-          username: userData.username,
           email: userData.email,
           avatarColor: colors[Math.floor(Math.random() * colors.length)],
         });
@@ -137,7 +132,7 @@ const Profile: React.FC = () => {
   };
 
   const renderAvatar = () => {
-    const initial = profile.username ? profile.username[0].toUpperCase() : "?";
+    const initial = profile.email ? profile.email[0].toUpperCase() : "?";
     return (
       <div
         style={{
@@ -180,7 +175,7 @@ const Profile: React.FC = () => {
                 {!isEditing ? (
                   <>
                     <div className="text-center mb-4">
-                      <h4>{profile.username}</h4>
+                      <h4>{profile.email}</h4>
                       <p className="text-muted">{profile.email}</p>
                     </div>
                     <div className="d-flex justify-content-between">
@@ -197,17 +192,6 @@ const Profile: React.FC = () => {
                   </>
                 ) : (
                   <Form>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Username</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="username"
-                        value={editedProfile.username}
-                        onChange={handleInputChange}
-                        disabled
-                      />
-                    </Form.Group>
-
                     <Form.Group className="mb-3">
                       <Form.Label>Email</Form.Label>
                       <Form.Control

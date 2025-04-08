@@ -71,13 +71,13 @@ const Dashboard = () => {
       className="dashboard-wrapper"
       style={{
         position: "relative",
-        minHeight: "200vh",
+        minHeight: "300vh",
         width: "100%",
-        background: "linear-gradient(30deg,#4A6E96 0%,#3E6C6A 100%)",
+        background: "#f5f5f5",
         overflow: "hidden",
       }}
     >
-      {/* Background pattern */}
+      {/* Background pattern to check scaling and position*/}
       <div
         style={{
           position: "absolute",
@@ -88,26 +88,10 @@ const Dashboard = () => {
           opacity: 0,
           pointerEvents: "none",
           backgroundImage: `
-          linear-gradient(#4A6E96 1px, transparent 0px),
-          linear-gradient(90deg, #4A6E96 1px, transparent 0px)
-        `,
-          backgroundSize: "40px 40px",
-        }}
-      ></div>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0,
-          pointerEvents: "none",
-          backgroundImage: `
-          linear-gradient(#4A6E96 10px, transparent 0px),
+          linear-gradient(#4A6E96 2px, transparent 0px),
           linear-gradient(90deg, #4A6E96 2px, transparent 0px)
         `,
-          backgroundSize: "10px 10px",
+          backgroundSize: "50px 50px",
         }}
       ></div>
 
@@ -121,7 +105,7 @@ const Dashboard = () => {
         >
           {/* Central box - Product System */}
           <Card
-            className="text-center mx-auto shadow border-0"
+            className="text-center mx-auto shadow border-1"
             style={{
               width: "300px",
               height: "200px",
@@ -130,7 +114,8 @@ const Dashboard = () => {
               left: "50%",
               transform: "translate(-50%, -50%)",
               cursor: "pointer",
-              backgroundColor: "#f8f9fa",
+              backgroundColor: "#4B6E96",
+              borderColor: "rgb(42, 18, 79)",
               borderRadius: "15px",
               transition: "transform 0.3s, box-shadow 0.3s",
               zIndex: 10,
@@ -138,7 +123,7 @@ const Dashboard = () => {
             onClick={navigateToProduct}
             onMouseOver={(e) => {
               e.currentTarget.style.transform =
-                "translate(-50%, -50%) scale(1.05)";
+                "translate(-50%, -50%) scale(1.03)";
               e.currentTarget.style.boxShadow =
                 "0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)";
             }}
@@ -166,13 +151,13 @@ const Dashboard = () => {
 
           {/* Top box - Target System (Zielsystem) */}
           <Card
-            className="text-center position-absolute shadow border-0"
+            className="text-center position-absolute shadow border-1"
             style={{
               width: "220px",
               top: "10%",
               left: "50%",
               transform: "translateX(-50%)",
-              backgroundColor: "#e3f2fd", // Light blue background
+              backgroundColor: "rgb(192, 216, 240)", // Light blue background
               borderRadius: "12px",
               transition: "transform 0.2s",
               zIndex: 10,
@@ -227,7 +212,7 @@ const Dashboard = () => {
 
           {/* Left box - Main System (Hauptsystem) */}
           <Card
-            className="text-center position-absolute shadow border-0"
+            className="text-center position-absolute shadow border-1"
             style={{
               width: "220px",
               top: "60%",
@@ -285,13 +270,13 @@ const Dashboard = () => {
 
           {/* Right box - Data System (Datensystem) */}
           <Card
-            className="text-center position-absolute shadow border-0"
+            className="text-center position-absolute shadow border-1"
             style={{
               width: "220px",
               top: "60%",
               right: "10%",
               transform: "translateY(-50%)",
-              backgroundColor: "#fff3e0", // Light orange background
+              backgroundColor: " #fff3e0", // Light orange background
               borderRadius: "12px",
               transition: "transform 0.2s",
               zIndex: 10,
@@ -342,7 +327,7 @@ const Dashboard = () => {
               </div>
             </Card.Body>
           </Card>
-          {/* Independent Curved Arrows */}
+          {/*arrows*/}
           <div className="connection-lines position-relative">
             {/* Top connection - Product to Marketplace */}
             <svg
@@ -356,43 +341,50 @@ const Dashboard = () => {
             >
               {/* Import arrow (bottom to top) */}
               <path
-                d="M0,150  0,24"
+                d="M0,150 0,24"
                 fill="none"
                 stroke="#4a90e2"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-top)"
+                style={{
+                  filter: "drop-shadow(1px -1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               {/* Export arrow (top to bottom) */}
               <path
-                d="M80,10  80,137"
+                d="M80,10 80,137"
                 fill="none"
                 stroke="#4a90e2"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-bottom)"
+                style={{
+                  filter: "drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               <defs>
-                {/* arrow-head (bottom to top) */}
+                {/* arrow-head (bottom to top) - More refined arrow shape */}
                 <marker
                   id="arrow-top"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="8"
+                  refY="3"
                   orient="auto"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+                  <path d="M0,0 L10,3 L0,6 L3,3 Z" fill="#4a90e2" />{" "}
+                  {/* More pointed */}
                 </marker>
                 <marker
                   id="arrow-bottom"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="7"
+                  refY="3"
                   orient="auto"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#4a90e2" />
+                  <path d="M0,0 L10,3 L0,6 L3,3 Z" fill="#4a90e2" />
                 </marker>
               </defs>
             </svg>
@@ -409,43 +401,48 @@ const Dashboard = () => {
             >
               {/* Import arrow (right to left) */}
               <path
-                d="M160,60  5,60"
+                d="M160,60 5,60"
                 fill="none"
                 stroke="#43b581"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-left)"
+                style={{
+                  filter: "drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               {/* Export arrow (left to right) */}
               <path
-                d="M-10,0  140,0"
+                d="M-10,0 140,0"
                 fill="none"
                 stroke="#43b581"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-right)"
+                style={{
+                  filter: "drop-shadow(1px -1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               <defs>
                 {/* arrow-head (center to left) */}
                 <marker
                   id="arrow-left"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
-                  orient="auto"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="2"
+                  refY="3"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+                  <path d="M10,0 L0,3 L10,6 L7,3 Z" fill="#43b581" />
                 </marker>
                 <marker
                   id="arrow-right"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="8"
+                  refY="3"
                   orient="auto"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#43b581" />
+                  <path d="M0,0 L10,3 L0,6 L3,3 Z" fill="#43b581" />
                 </marker>
               </defs>
             </svg>
@@ -465,8 +462,11 @@ const Dashboard = () => {
                 d="M-20,0 135,0"
                 fill="none"
                 stroke="#faa61a"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-right-orange)"
+                style={{
+                  filter: "drop-shadow(1px -1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               {/* Export arrow (right to left) */}
@@ -474,30 +474,32 @@ const Dashboard = () => {
                 d="M150,60 0,60"
                 fill="none"
                 stroke="#faa61a"
-                strokeWidth="2"
+                strokeWidth="3"
                 markerEnd="url(#arrow-left-orange)"
+                style={{
+                  filter: "drop-shadow(-1px 1px 2px rgba(0, 0, 0, 0.1))",
+                }}
               />
 
               <defs>
                 <marker
                   id="arrow-right-orange"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="8"
+                  refY="3"
                   orient="auto"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
+                  <path d="M0,0 L10,3 L0,6 L3,3 Z" fill="#faa61a" />
                 </marker>
                 <marker
                   id="arrow-left-orange"
-                  markerWidth="11"
-                  markerHeight="7"
-                  refX="5"
-                  refY="3.5"
-                  orient="auto"
+                  markerWidth="10"
+                  markerHeight="6"
+                  refX="2"
+                  refY="3"
                 >
-                  <polygon points="2 0, 8 3.5, 2 7" fill="#faa61a" />
+                  <path d="M10,0 L0,3 L10,6 L7,3 Z" fill="#faa61a" />
                 </marker>
               </defs>
             </svg>
@@ -506,8 +508,8 @@ const Dashboard = () => {
       </div>
 
       {/*added last Bestellung*/}
-      <Container className="mt-5 mb-4">
-        <Row className="g-4">
+      <Container className=" mb-4">
+        <Row className="g-6">
           {/* Last Order Section */}
           <Col md={4}>
             <Card className="h-100 shadow-sm border-0">

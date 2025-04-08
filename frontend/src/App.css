@@ -1,0 +1,12 @@
+body {
+  padding-top: 0px;
+}
+
+html {
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+}
+
+::-webkit-scrollbar-track {
+  margin-top: 60px;
+}

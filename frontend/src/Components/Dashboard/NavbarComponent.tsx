@@ -8,25 +8,24 @@ import mimuco_4 from "../../LoginAssets/mimuco_4.png"; // Adjust the path as nec
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const NavbarComponent = () => {
-  const [userName, setUserName] = useState(""); // State to store username
+  const [email, setEmail] = useState(""); // State to store email
   const [avatarColor, setAvatarColor] = useState(""); // Avatar color
   const navigate = useNavigate();
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const [visible, setVisible] = useState(true);
 
   const colors = [
-    "#FF5733",
-    "#33FF57",
-    "#3357FF",
-    "#F0A500",
-    "#8E44AD",
-    "#FF0000",
-    "#00FF00",
-    "#0000FF",
-    "#00FFFF",
-    "#800000",
-    "#008000",
-    "#000080",
-    "#808000",
-    "#C0C0C0",
+    "#FFB400", // amber (golden but modern)
+    "#00BFFF", // deep sky blue
+    "#FF6347", // tomato red
+    "#32CD32", // lime green
+    "#FFC300", // rich golden yellow
+    "#FF8C69", // light coral
+    "#20C997", // teal / greenish cyan
+    "#FF1493", // deep pink
+    "#6495ED", // cornflower blue
+    "#FF6F61", // pastel red (but more saturated)
+    "#F0E68C", // khaki
   ];
 
   useEffect(() => {
@@ -45,7 +44,7 @@ const NavbarComponent = () => {
         });
 
         if (response.data.isValid) {
-          setUserName(response.data.user.username); // Use username from token
+          setEmail(response.data.user.email); // Use email from token
         } else {
           console.error("Token invalid or expired.");
         }
@@ -61,7 +60,23 @@ const NavbarComponent = () => {
     setAvatarColor(colors[Math.floor(Math.random() * colors.length)]);
   }, []);
 
-  const initial = userName ? userName[0].toUpperCase() : "?";
+  // Add scroll behavior hook
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollPos = window.pageYOffset;
+
+      // Show navbar if scrolling up or at the top of the page
+      setVisible(prevScrollPos > currentScrollPos || currentScrollPos < 10);
+
+      setPrevScrollPos(currentScrollPos);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [prevScrollPos]);
+
+  const initial = email ? email[0].toUpperCase() : "?";
 
   const Logout = () => {
     localStorage.removeItem("accessToken");
@@ -69,70 +84,94 @@ const NavbarComponent = () => {
   };
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg">
-      <Container>
-        {/* Logo remains on the left */}
-        <Navbar.Brand as={Link} to="/dashboard">
-          <div className="text-center mb-24">
-            <img
-              src={mimuco_4}
-              alt="Logo"
-              style={{
-                width: "150px",
-                filter:
-                  "invert(60%) sepia(30%) saturate(500%) hue-rotate(180deg)",
-              }}
-            />
-          </div>
-        </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse className="justify-content-end">
-          {/* User Avatar with Dropdown */}
-          <Dropdown align="end">
-            <Dropdown.Toggle
-              variant="light"
-              id="dropdown-basic"
-              className="d-flex align-items-center"
-              style={{
-                backgroundColor: avatarColor,
-                border: "none",
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                fontWeight: "bold",
-                color: "white",
-              }}
-            >
-              {initial}
-            </Dropdown.Toggle>
-            <Dropdown.Menu>
-              <Dropdown.Item onClick={() => navigate("../dashboard/profile")}>
-                Profile
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("../dashboard/settings")}>
-                Settings
-              </Dropdown.Item>
-              <Dropdown.Item onClick={() => navigate("../dashboard/about-us")}>
-                About Us
-              </Dropdown.Item>
-              <Dropdown.Item
-                onClick={() => navigate("../dashboard/categorizer")}
+    <>
+      <Navbar
+        style={{
+          backgroundColor: "#305CDE",
+          transition: "top 0.3s",
+          position: "fixed",
+          width: "100%",
+          zIndex: 1030,
+          borderTopRightRadius: "10px", // Add rounded corner on top right
+          //borderBottomRightRadius: "10px", // Add rounded corner on bottom right
+          top: visible ? "0" : "-60px", // Adjust the negative value based on your navbar height
+        }}
+        variant="dark"
+        expand="lg"
+      >
+        <Container>
+          {/* Logo remains on the left */}
+          <Navbar.Brand as={Link} to="/dashboard">
+            <div className="text-center">
+              <img
+                src={mimuco_4}
+                alt="Logo"
+                style={{
+                  width: "150px",
+                  height: "auto",
+                  maxHeight: "40px", // Add max height to ensure consistency
+                }}
+              />
+            </div>
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse className="justify-content-end">
+            {/* User Avatar with Dropdown */}
+            <Dropdown align="end">
+              <Dropdown.Toggle
+                variant="light"
+                id="dropdown-basic"
+                className="d-flex align-items-center justify-content-center"
+                style={{
+                  backgroundColor: avatarColor,
+                  //border: "none",
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  borderWidth: "2px",
+                  borderColor: "lightGreen",
+                  fontWeight: "bold",
+                  color: "white",
+                  padding: 0,
+                }}
               >
-                Categorizer
-              </Dropdown.Item>
-              <Dropdown.Divider />
-              <Dropdown.Item
-                as={Button}
-                className="d-flex align-items-center"
-                onClick={Logout}
-              >
-                <IoExitOutline className="me-2" /> Logout
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </Navbar.Collapse>
-      </Container>
-    </Navbar>
+                {initial}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                <Dropdown.Item onClick={() => navigate("../dashboard/profile")}>
+                  Profile
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => navigate("../dashboard/settings")}
+                >
+                  Settings
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => navigate("../dashboard/about-us")}
+                >
+                  About Us
+                </Dropdown.Item>
+                <Dropdown.Item
+                  onClick={() => navigate("../dashboard/categorizer")}
+                >
+                  Categorizer
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item
+                  as={Button}
+                  className="d-flex align-items-center"
+                  onClick={Logout}
+                >
+                  <IoExitOutline className="me-2" /> Logout
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+      <div />
+      <div style={{ height: "60px" }}></div>
+    </>
   );
 };
 

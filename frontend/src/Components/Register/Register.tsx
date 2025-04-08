@@ -2,16 +2,15 @@ const apiUrl = import.meta.env.VITE_API_URL;
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import video from "../../LoginAssets/video.mp4";
-import MimucoLogo from "../../LoginAssets/MimucoLogo.png";
+import MimucoLogo from "../../LoginAssets/mimuco_4.png";
 import { Link, useNavigate } from "react-router-dom";
-import { FaUser, FaEnvelope } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa";
 import { IoKey } from "react-icons/io5";
 import Axios from "axios";
 
 const Register = () => {
   // State for form inputs
   const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
@@ -26,7 +25,6 @@ const Register = () => {
 
   //State for validity of flieds
   const [isEmailValid, setIsEmailValid] = useState(true);
-  const [isUsernameValid, setIsUsernameValid] = useState(true);
   const [isPasswordValid, setIsPasswordValid] = useState(true);
   const [isConfirmPasswordValid, setIsConfirmPasswordValid] = useState(true);
 
@@ -63,11 +61,10 @@ const Register = () => {
     setConfirmPasswordError("");
 
     // Check if all fields are filled
-    if (!email || !username || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       setRegisterStatus("All fields are required");
       //check validity
       setIsEmailValid(!!email);
-      setIsUsernameValid(!!username);
       setIsPasswordValid(!!password);
       setIsConfirmPasswordValid(!!confirmPassword);
 
@@ -95,13 +92,11 @@ const Register = () => {
     // API request using Axios
     Axios.post(`${apiUrl}/register`, {
       Email: email,
-      Username: username,
       Password: password,
     })
       .then(() => {
         // Clear all fields
         setEmail("");
-        setUsername("");
         setPassword("");
         setConfirmPassword("");
         // Navigate to login after a delay
@@ -168,39 +163,6 @@ const Register = () => {
               </span>
             )}
 
-            {/* Username Input */}
-            <div className="mb-3">
-              <label htmlFor="username" className="form-label">
-                Benutzername
-              </label>
-              <div className="input-group">
-                <span className="input-group-text">
-                  <FaUser />
-                </span>
-                <input
-                  type="text"
-                  id="username"
-                  placeholder="Benutzername eingeben"
-                  className={`form-control ${
-                    !isUsernameValid ? "is-invalid" : ""
-                  }`}
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setIsUsernameValid(true); // Reset validity on change
-                  }}
-                  style={
-                    !isUsernameValid
-                      ? {
-                          borderColor: "rgba(230, 18, 21, 0.91)",
-                          borderWidth: "2.5px",
-                        }
-                      : {}
-                  }
-                />
-              </div>
-            </div>
-
             {/* Email Input */}
             <div className="mb-3">
               <label htmlFor="email" className="form-label">
@@ -259,6 +221,7 @@ const Register = () => {
                   type="password"
                   id="password"
                   placeholder="Passwort eingeben"
+                  autoComplete="new-password"
                   className={`form-control ${
                     !isPasswordValid ? "is-invalid" : ""
                   }`}
@@ -305,6 +268,7 @@ const Register = () => {
                   type="password"
                   id="confirmPassword"
                   placeholder="Passwort bestätigen"
+                  autoComplete="new-password"
                   className={`form-control ${
                     !isConfirmPasswordValid ? "is-invalid" : ""
                   }`}

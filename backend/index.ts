@@ -43,34 +43,18 @@ app.listen(3002, "0.0.0.0", () => {
 
 // User registration
 app.post("/register", async (req: Request, res: Response): Promise<any> => {
-  const {
-    Email: sentEmail,
-    Username: sentUsername,
-    Password: sentPassword,
-  } = req.body;
+  const { Email: sentEmail, Password: sentPassword } = req.body;
 
   try {
-    // Check if email or username is already taken
+    // Check if email is already taken
     const [existingUsers]: any = await db.query(
-      "SELECT email, username FROM user WHERE email = ? OR username = ?",
-      [sentEmail, sentUsername]
+      "SELECT email FROM user WHERE email = ?",
+      [sentEmail]
     );
 
     if (existingUsers.length > 0) {
-      const isEmailTaken = existingUsers.some(
-        (user: any) => user.email === sentEmail
-      );
-      const isUsernameTaken = existingUsers.some(
-        (user: any) => user.username === sentUsername
-      );
-
       return res.status(409).json({
-        message:
-          isEmailTaken && isUsernameTaken
-            ? "Email and username already taken"
-            : isEmailTaken
-            ? "Email already taken"
-            : "Username already taken",
+        message: "Email already taken",
       });
     }
 
@@ -84,8 +68,8 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
 
     // Insert user into the database
     await db.query(
-      "INSERT INTO user (email, username, password, is_verified, verification_token) VALUES (?, ?, ?, ?, ?)",
-      [sentEmail, sentUsername, hash, 0, verificationToken]
+      "INSERT INTO user (email, password, is_verified, verification_token) VALUES (?, ?, ?, ?)",
+      [sentEmail, hash, 0, verificationToken]
     );
 
     // Send verification email
@@ -103,9 +87,10 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
       emailHTML
     );
 
-    res
-      .status(201)
-      .json({ message: "User registered. Check your email for verification." });
+    res.status(201).json({
+      message:
+        "You are registered but not yet verified. Check your email for verification.",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Internal server error" });
@@ -139,18 +124,18 @@ app.get(
 
 // User login
 app.post("/login", async (req: Request, res: Response): Promise<void> => {
-  const { loginUsername, loginPassword } = req.body;
+  const { loginEmail, loginPassword } = req.body;
 
-  console.log("Login Attempt:", { loginUsername, loginPassword }); // Add this
+  console.log("Login Attempt:", { loginEmail, loginPassword }); // Add this
 
   try {
-    const [users]: any = await db.query(
-      "SELECT * FROM user WHERE username = ? OR email = ?",
-      [loginUsername, loginUsername]
-    );
+    const [users]: any = await db.query("SELECT * FROM user WHERE email = ?", [
+      loginEmail,
+    ]);
 
     //console.log("Users Found:", users); // Add this for debugging
 
+    // user not found
     if (users.length === 0) {
       res.status(401).json({ message: "Invalid credentials" });
       return;
@@ -160,6 +145,7 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     //console.log("User Data:", user); // Add this for debugging
 
+    //user not verified
     if (!user.is_verified) {
       res
         .status(403)
@@ -171,13 +157,14 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     //console.log("Password Match:", isMatch); // Add this for debugging
 
+    // user regitered but wrong password
     if (!isMatch) {
       res.status(401).json({ message: "Invalid credentials" });
       return;
     }
-    //------------------------------------maybe us either the emai or the username test first
+
     const accessToken = jwt.sign(
-      { id: user.id, username: user.username },
+      { id: user.id, email: user.email },
       SECRET_KEY,
       { expiresIn: "4h" }
     );
@@ -193,7 +180,7 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     res.json({
       success: true,
-      token: accessToken, // Match frontend expectation because i name them diffent all the time...
+      token: accessToken, // Match frontend expectation because I name them diffent all the time...
       refreshToken,
     });
   } catch (err) {
@@ -202,9 +189,8 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
-// after verify-token endpoint in backend/index.ts
 app.post(
-  "/reset-password",
+  "/forgot-password",
   async (req: Request, res: Response): Promise<any> => {
     const { email } = req.body;
 
@@ -226,10 +212,109 @@ app.post(
       const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
       const emailHTML = `
-      <h2>Password Reset</h2>
-      <p>Click below to reset your password:</p>
-      <a href="${resetLink}">${resetLink}</a>
-    `;
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reset Your Password</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    .email-header {
+      background-color: #4a90e2;
+      padding: 25px;
+      text-align: center;
+      border-radius: 5px 5px 0 0;
+    }
+    .email-header h1 {
+      color: white;
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    .email-body {
+      background-color: white;
+      padding: 30px;
+      border-radius: 0 0 5px 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    .email-body p {
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #4a90e2;
+      color: white;
+      text-decoration: none;
+      padding: 12px 30px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 20px 0;
+      text-align: center;
+    }
+    .button:hover {
+      background-color: #3a80d2;
+    }
+    .fallback-link {
+      word-break: break-all;
+      color: #666;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+    .email-footer {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 12px;
+      color: #888;
+    }
+    .security-note {
+      background-color: #f7f7f7;
+      border-left: 4px solid #4a90e2;
+      padding: 10px 15px;
+      font-size: 14px;
+      margin-top: 25px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="email-header">
+      <h1>Password Reset Request</h1>
+    </div>
+    <div class="email-body">
+      <p>Hello,</p>
+      <p>We received a request to reset the password for your account. To proceed with resetting your password, please click the button below:</p>
+      
+      <a href="${resetLink}" class="button">Reset My Password</a>
+      
+      <p>If the button above doesn't work, copy and paste the following link into your browser:</p>
+      <p class="fallback-link">${resetLink}</p>
+      
+      <div class="security-note">
+        <strong>Security Note:</strong> If you didn't request a password reset, please ignore this email or contact support if you have concerns about your account security.
+      </div>
+    </div>
+    <div class="email-footer">
+      <p>This is an automated email, please do not reply. If you need assistance, please contact our support team.</p>
+    </div>
+  </div>
+</body>
+</html>
+      `;
 
       await sendEmail(
         email,
@@ -238,10 +323,61 @@ app.post(
         emailHTML
       );
 
-      res.json({ message: "Password reset link sent" });
+      res.json({ message: "Password reset link sent. Check your email!" });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
+app.get(
+  "/reset-password/:token",
+  async (req: Request, res: Response): Promise<any> => {
+    const { token } = req.params;
+
+    try {
+      // Verify the token is valid and not expired
+      const decoded = jwt.verify(token, SECRET_KEY) as { email: string };
+
+      // If verification passes, token is valid
+      res.json({ valid: true, email: decoded.email });
+    } catch (err) {
+      console.error("Token verification error:", err);
+      res
+        .status(400)
+        .json({ valid: false, message: "Invalid or expired token" });
+    }
+  }
+);
+
+app.post(
+  "/complete-reset-password",
+  async (req: Request, res: Response): Promise<any> => {
+    const { token, password } = req.body;
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, SECRET_KEY) as { email: string };
+      const email = decoded.email;
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update user's password
+      const [result]: any = await db.query(
+        "UPDATE user SET password = ? WHERE email = ?",
+        [hashedPassword, email]
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ message: "Password successfully reset!" });
+    } catch (err) {
+      console.error("Password reset error:", err);
+      res.status(400).json({ message: "Invalid or expired token" });
     }
   }
 );
@@ -279,7 +415,7 @@ app.post(
         console.log("Token verified:", decoded);
 
         const newAccessToken = jwt.sign(
-          { id: user.id, username: user.username },
+          { id: user.id, email: user.email },
           SECRET_KEY,
           { expiresIn: "1h" }
         );
@@ -302,7 +438,7 @@ app.get("/user/profile", verifyToken, async (req: any, res: any) => {
     const userId = req.user.id; // Extract user ID from the decoded token
 
     const [users]: any = await db.query(
-      "SELECT id, username, email FROM user WHERE id = ?",
+      "SELECT id, email FROM user WHERE id = ?",
       [userId]
     );
 
@@ -313,7 +449,6 @@ app.get("/user/profile", verifyToken, async (req: any, res: any) => {
     const user = users[0];
 
     res.json({
-      username: user.username,
       email: user.email,
     });
   } catch (err) {

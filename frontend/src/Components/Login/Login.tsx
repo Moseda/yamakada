@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import video from "../../LoginAssets/video.mp4";
-import MimucoLogo from "../../LoginAssets/MimucoLogo.png";
+import MimucoLogo from "../../LoginAssets/Mimuco_4.png";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser } from "react-icons/fa";
 import { IoKey } from "react-icons/io5";
 import api from "../../utils/api";
 
 const Login = () => {
-  const [loginUsername, setLoginUsername] = useState("");
+  const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
 
   const navigateTo = useNavigate();
@@ -17,8 +17,8 @@ const Login = () => {
   const [statusHolder, setStatusHolder] = useState("message");
 
   const validateForm = () => {
-    const errors: { username?: string; password?: string } = {};
-    if (!loginUsername.trim()) errors.username = "Username is required";
+    const errors: { email?: string; password?: string } = {};
+    if (!loginEmail.trim()) errors.email = "email is required";
     if (!loginPassword) errors.password = "Password is required";
     return errors;
   };
@@ -38,7 +38,7 @@ const Login = () => {
 
     try {
       const response = await api.post("/login", {
-        loginUsername,
+        loginEmail,
         loginPassword,
       });
 
@@ -134,10 +134,10 @@ const Login = () => {
               </span>
             </div>
 
-            {/* Username Input */}
+            {/* email Input */}
             <div className="mb-3">
-              <label htmlFor="username" className="form-label">
-                Username/Email
+              <label htmlFor="email" className="form-label">
+                Email
               </label>
               <div className="input-group">
                 <span className="input-group-text">
@@ -145,11 +145,11 @@ const Login = () => {
                 </span>
                 <input
                   type="text"
-                  id="username"
-                  placeholder="Enter Username or Email"
+                  id="email"
+                  placeholder="Enter Email"
                   className="form-control"
                   onChange={(event) => {
-                    setLoginUsername(event.target.value);
+                    setLoginEmail(event.target.value);
                   }}
                 />
               </div>
@@ -168,6 +168,7 @@ const Login = () => {
                   id="password"
                   placeholder="Enter Password"
                   className="form-control"
+                  autoComplete="current-password"
                   onChange={(event) => {
                     setLoginPassword(event.target.value);
                   }}
@@ -182,7 +183,7 @@ const Login = () => {
 
             {/*forgot password*/}
             <span className="forgotPassword">
-              <a href="/reset-password">Forgot password?</a>
+              <a href="/forgot-password">Forgot password?</a>
             </span>
           </form>
         </div>

@@ -11,6 +11,7 @@ import Categorizer from "./Components/Dashboard/Categorizer";
 import AboutUs from "./Components/Dashboard/AboutUs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
+import SetNewPassword from "./Components/ResetPassword/SetNewPassword";
 
 const router = createBrowserRouter([
   {
@@ -22,8 +23,12 @@ const router = createBrowserRouter([
     element: <Register />,
   },
   {
-    path: "/reset-password",
+    path: "/forgot-password",
     element: <ResetPassword />,
+  },
+  {
+    path: "/reset-password/:token",
+    element: <SetNewPassword />,
   },
   {
     path: "/dashboard",
