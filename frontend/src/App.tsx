@@ -12,6 +12,8 @@ import AboutUs from "./Components/Dashboard/AboutUs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import SetNewPassword from "./Components/ResetPassword/SetNewPassword";
+import ProductSystem from "./Components/Main/ProtuctSystem";
+import EmailVerificationPage from "./Verification/EmailVerificationPage";
 
 const router = createBrowserRouter([
   {
@@ -39,7 +41,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/dashboard/profile",
+    path: "/profile",
     element: (
       <ProtectedRoute>
         <Profile />
@@ -47,7 +49,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/dashboard/settings",
+    path: "/settings",
     element: (
       <ProtectedRoute>
         <Settings />
@@ -55,7 +57,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/dashboard/about-us",
+    path: "/about-us",
     element: (
       <ProtectedRoute>
         <AboutUs />
@@ -63,7 +65,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/dashboard/categorizer",
+    path: "/categorizer",
     element: (
       <ProtectedRoute>
         <Categorizer />
@@ -71,8 +73,20 @@ const router = createBrowserRouter([
     ),
   },
   {
+    path: "/ProductSystem",
+    element: (
+      <ProtectedRoute>
+        <ProductSystem />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/verify/:token",
     element: <EmailVerification />,
+  },
+  {
+    path: "/email-verification",
+    element: <EmailVerificationPage />,
   },
 ]);
 

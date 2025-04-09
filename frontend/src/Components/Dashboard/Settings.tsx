@@ -119,112 +119,123 @@ const Settings: React.FC = () => {
   };
 
   return (
-    <div>
+    <>
       {/* Navbar */}
       <NavbarComponent />
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={10} lg={8}>
-            <Card className="shadow-sm">
-              <Card.Header className="bg-primary text-white">
-                <FaCog className="me-2" /> Application Settings
-              </Card.Header>
-              <Card.Body>
-                {message.type && (
-                  <Alert variant={message.type}>{message.text}</Alert>
-                )}
+      <div
+        className="dashboard-wrapper"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          width: "100%",
+          background: "#f5f5f5",
+          overflow: "hidden",
+        }}
+      >
+        <Container className="mt-5">
+          <Row className="justify-content-center">
+            <Col md={10} lg={8}>
+              <Card className="shadow-sm">
+                <Card.Header className="bg-primary text-white">
+                  <FaCog className="me-2" /> Application Settings
+                </Card.Header>
+                <Card.Body>
+                  {message.type && (
+                    <Alert variant={message.type}>{message.text}</Alert>
+                  )}
 
-                <Form>
-                  <Row className="mb-3">
-                    <Col>
-                      <Card className="h-100">
-                        <Card.Body>
-                          <h5>
-                            <FaBell className="me-2" /> Notifications
-                          </h5>
-                          <Form.Check
-                            type="switch"
-                            id="notifications"
-                            name="notifications"
-                            label="Enable Notifications"
-                            checked={settings.notifications}
-                            onChange={handleSettingChange}
-                          />
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <Col>
-                      <Card className="h-100">
-                        <Card.Body>
-                          <h5>
-                            <FaLanguage className="me-2" /> Language
-                          </h5>
-                          <Form.Select
-                            name="language"
-                            value={settings.language}
-                            onChange={handleSettingChange}
-                          >
-                            <option value="en">English</option>
-                            <option value="es">Spanish</option>
-                            <option value="fr">French</option>
-                          </Form.Select>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  </Row>
+                  <Form>
+                    <Row className="mb-3">
+                      <Col>
+                        <Card className="h-100">
+                          <Card.Body>
+                            <h5>
+                              <FaBell className="me-2" /> Notifications
+                            </h5>
+                            <Form.Check
+                              type="switch"
+                              id="notifications"
+                              name="notifications"
+                              label="Enable Notifications"
+                              checked={settings.notifications}
+                              onChange={handleSettingChange}
+                            />
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col>
+                        <Card className="h-100">
+                          <Card.Body>
+                            <h5>
+                              <FaLanguage className="me-2" /> Language
+                            </h5>
+                            <Form.Select
+                              name="language"
+                              value={settings.language}
+                              onChange={handleSettingChange}
+                            >
+                              <option value="en">English</option>
+                              <option value="es">Spanish</option>
+                              <option value="fr">French</option>
+                            </Form.Select>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
 
-                  <Row className="mb-3">
-                    <Col>
-                      <Card className="h-100">
-                        <Card.Body>
-                          <h5>
-                            <FaPalette className="me-2" /> Theme
-                          </h5>
-                          <Form.Select
-                            name="theme"
-                            value={settings.theme}
-                            onChange={handleSettingChange}
-                          >
-                            <option value="light">Light Mode</option>
-                            <option value="dark">Dark Mode</option>
-                          </Form.Select>
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                    <Col>
-                      <Card className="h-100">
-                        <Card.Body>
-                          <h5>
-                            <FaLock className="me-2" /> Privacy
-                          </h5>
-                          <Form.Check
-                            type="switch"
-                            id="privacyMode"
-                            name="privacyMode"
-                            label="Privacy Mode"
-                            checked={settings.privacyMode}
-                            onChange={handleSettingChange}
-                          />
-                        </Card.Body>
-                      </Card>
-                    </Col>
-                  </Row>
+                    <Row className="mb-3">
+                      <Col>
+                        <Card className="h-100">
+                          <Card.Body>
+                            <h5>
+                              <FaPalette className="me-2" /> Theme
+                            </h5>
+                            <Form.Select
+                              name="theme"
+                              value={settings.theme}
+                              onChange={handleSettingChange}
+                            >
+                              <option value="light">Light Mode</option>
+                              <option value="dark">Dark Mode</option>
+                            </Form.Select>
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                      <Col>
+                        <Card className="h-100">
+                          <Card.Body>
+                            <h5>
+                              <FaLock className="me-2" /> Privacy
+                            </h5>
+                            <Form.Check
+                              type="switch"
+                              id="privacyMode"
+                              name="privacyMode"
+                              label="Privacy Mode"
+                              checked={settings.privacyMode}
+                              onChange={handleSettingChange}
+                            />
+                          </Card.Body>
+                        </Card>
+                      </Col>
+                    </Row>
 
-                  <div className="d-flex justify-content-end">
-                    <Button
-                      variant="secondary"
-                      onClick={() => navigate("/dashboard")}
-                    >
-                      Back to Dashboard
-                    </Button>
-                  </div>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+                    <div className="d-flex justify-content-end">
+                      <Button
+                        variant="secondary"
+                        onClick={() => navigate("/dashboard")}
+                      >
+                        Back to Dashboard
+                      </Button>
+                    </div>
+                  </Form>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </>
   );
 };
 

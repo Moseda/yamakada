@@ -72,18 +72,111 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
       [sentEmail, hash, 0, verificationToken]
     );
 
-    // Send verification email
+    // Send verification email with improved template
     const confirmationLink = `${process.env.FRONTEND_URL}/verify/${verificationToken}`;
+
     const emailHTML = `
-            <h1>Welcome to Mimuco!</h1>
-            <p>Thanks for signing up. Please verify your email:</p>
-            <a href="${confirmationLink}">Verify my email</a>
-        `;
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Welcome to Mimuco!</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .container {
+          padding: 20px;
+          border: 1px solid #eaeaea;
+          border-radius: 5px;
+        }
+        .header {
+          text-align: center;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        .logo {
+          max-width: 150px;
+          height: auto;
+        }
+        .content {
+          padding: 30px 0;
+        }
+        .welcome-message {
+          font-size: 18px;
+          font-weight: bold;
+          margin-bottom: 20px;
+        }
+        .btn {
+          display: inline-block;
+          background-color: #007bff;
+          color: white;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 4px;
+          font-weight: bold;
+          margin: 20px 0;
+        }
+        .next-steps {
+          background-color: #f8f9fa;
+          padding: 15px;
+          border-radius: 4px;
+          margin: 20px 0;
+        }
+        .footer {
+          border-top: 1px solid #eaeaea;
+          padding-top: 20px;
+          text-align: center;
+          font-size: 12px;
+          color: #999;
+        }
+        .expiry-note {
+          font-size: 13px;
+          color: #666;
+          margin-top: 15px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>Welcome to Mimuco!</h2>
+        </div>
+        
+        <div class="content">
+          <p class="welcome-message">Thank you for creating an account with us!</p>
+          
+          <p>To complete your registration and activate your account, please verify your email address by clicking the button below:</p>
+          
+          <div style="text-align: center;">
+            <a href="${confirmationLink}" class="btn">Verify My Email</a>
+          </div>
+          
+          <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+          <p style="word-break: break-all;">${confirmationLink}</p>
+          
+
+          
+          <p class="expiry-note">This verification link will expire in 24 hours.</p>
+        </div>
+        
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Mimuco. All rights reserved.</p>
+          <p>If you didn't create this account, please ignore this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
 
     await sendEmail(
       sentEmail,
-      "Verify Your Mimuco Account",
-      `Please verify your email: ${confirmationLink}`,
+      "Welcome to Mimuco - Verify Your Account",
+      `Welcome to Mimuco! Please verify your email by clicking this link: ${confirmationLink}`,
       emailHTML
     );
 
@@ -122,11 +215,152 @@ app.get(
   }
 );
 
+app.post(
+  "/resend-verification",
+  async (req: Request, res: Response): Promise<any> => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    try {
+      // Check if user exists and isn't already verified
+      const [users]: any = await db.query(
+        "SELECT email, is_verified FROM user WHERE email = ?",
+        [email]
+      );
+
+      if (users.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const user = users[0];
+
+      if (user.is_verified === 1) {
+        return res.status(200).json({ message: "Email is already verified" });
+      }
+
+      // Generate new verification token
+      const newVerificationToken = jwt.sign({ email }, SECRET_KEY, {
+        expiresIn: "1d",
+      });
+
+      // Update the verification token in the database
+      await db.query("UPDATE user SET verification_token = ? WHERE email = ?", [
+        newVerificationToken,
+        email,
+      ]);
+
+      // Send the verification email
+      const confirmationLink = `${process.env.FRONTEND_URL}/verify/${newVerificationToken}`;
+
+      const emailHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Verify Your Mimuco Account</title>
+      <style>
+        body {
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+        }
+        .container {
+          padding: 20px;
+          border: 1px solid #eaeaea;
+          border-radius: 5px;
+        }
+        .header {
+          text-align: center;
+          padding-bottom: 20px;
+          border-bottom: 1px solid #eaeaea;
+        }
+        .logo {
+          max-width: 150px;
+          height: auto;
+        }
+        .content {
+          padding: 30px 0;
+        }
+        .btn {
+          display: inline-block;
+          background-color: #007bff;
+          color: white;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 4px;
+          font-weight: bold;
+          margin: 20px 0;
+        }
+        .footer {
+          border-top: 1px solid #eaeaea;
+          padding-top: 20px;
+          text-align: center;
+          font-size: 12px;
+          color: #999;
+        }
+        .expiry-note {
+          font-size: 13px;
+          color: #666;
+          margin-top: 15px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>Email Verification - Mimuco</h2>
+        </div>
+        
+        <div class="content">
+          <h3>Verification Requested</h3>
+          <p>You've requested a new verification email for your Mimuco account. To complete your account verification, please click the button below:</p>
+          
+          <div style="text-align: center;">
+            <a href="${confirmationLink}" class="btn">Verify My Email</a>
+          </div>
+          
+          <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+          <p style="word-break: break-all;">${confirmationLink}</p>
+          
+          <p class="expiry-note">This verification link will expire in 24 hours.</p>
+        </div>
+        
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Mimuco. All rights reserved.</p>
+          <p>If you didn't request this verification, please ignore this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+    `;
+
+      await sendEmail(
+        email,
+        "Verify Your Mimuco Account - Verification Link",
+        `Please verify your email by clicking this link: ${confirmationLink}`,
+        emailHTML
+      );
+
+      res.status(200).json({
+        message: "Verification email has been sent successfully",
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);
+
 // User login
 app.post("/login", async (req: Request, res: Response): Promise<void> => {
   const { loginEmail, loginPassword } = req.body;
 
-  console.log("Login Attempt:", { loginEmail, loginPassword }); // Add this
+  console.log("Login Attempt:", { loginEmail, loginPassword: "[REDACTED]" }); // Add this
 
   try {
     const [users]: any = await db.query("SELECT * FROM user WHERE email = ?", [
@@ -147,9 +381,10 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 
     //user not verified
     if (!user.is_verified) {
-      res
-        .status(403)
-        .json({ message: "Account not verified. Check your email." });
+      res.status(403).json({
+        message: "Account not verified. Check your email.",
+        unverified: true, // flag to indicate unverified status
+      });
       return;
     }
 
@@ -206,7 +441,7 @@ app.post(
 
       const user = users[0];
       const resetToken = jwt.sign({ email: user.email }, SECRET_KEY, {
-        expiresIn: "1h",
+        expiresIn: "30min",
       });
 
       const resetLink = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;

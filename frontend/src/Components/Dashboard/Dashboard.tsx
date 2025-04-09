@@ -7,9 +7,12 @@ import {
   Col,
   Form,
   Row,
+  ListGroup,
+  Badge,
 } from "react-bootstrap";
 import { BsArrowRight, BsPlus } from "react-icons/bs";
 import NavbarComponent from "./NavbarComponent";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   // Sample data for dropdowns
@@ -29,10 +32,11 @@ const Dashboard = () => {
   const [selectedManufacturer, setSelectedManufacturer] = useState("");
   const [selectedMarketplace, setSelectedMarketplace] = useState("");
 
+  const navigate = useNavigate();
   // Navigation functions
   const navigateToProduct = () => {
     console.log("Navigating to Product page");
-    // TODO navigation logic
+    navigate("/ProductSystem");
   };
 
   const navigateToShop = () => {
@@ -507,131 +511,136 @@ const Dashboard = () => {
         </Container>
       </div>
 
-      {/*added last Bestellung*/}
-      <Container className=" mb-4">
-        <Row className="g-6">
-          {/* Last Order Section */}
-          <Col md={4}>
-            <Card className="h-100 shadow-sm border-0">
-              <Card.Header className="bg-white border-bottom border-2 border-primary">
-                <h5 className="mb-0 text-primary fw-bold">Letzte Bestellung</h5>
-              </Card.Header>
-              <Card.Body>
-                <Form>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Bestellnummer</Form.Label>
-                    <Form.Control type="text" placeholder="z.B. ORD-12345" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Kunde</Form.Label>
-                    <Form.Control type="text" placeholder="Name des Kunden" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Datum</Form.Label>
-                    <Form.Control type="date" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Status</Form.Label>
-                    <Form.Select>
-                      <option>Bestätigt</option>
-                      <option>In Bearbeitung</option>
-                      <option>Versendet</option>
-                      <option>Abgeschlossen</option>
-                    </Form.Select>
-                  </Form.Group>
-                  <Button variant="outline-primary" className="w-100">
-                    Details anzeigen
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
+      <Container className="mb-4">
+        {/* Last Orders Section */}
+        <Card className="mb-4 shadow-sm border-0">
+          <Card.Header className="bg-white border-bottom border-2 border-primary">
+            <h5 className="mb-0 text-primary fw-bold">Letzte Bestellungen</h5>
+          </Card.Header>
+          <Card.Body>
+            <ListGroup variant="flush">
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">ORD-12345</h6>
+                  <p className="mb-0 text-muted small">
+                    Max Mustermann • 08.04.2025
+                  </p>
+                </div>
+                <Badge bg="success" pill>
+                  Abgeschlossen
+                </Badge>
+              </ListGroup.Item>
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">ORD-12344</h6>
+                  <p className="mb-0 text-muted small">
+                    Maria Schmidt • 07.04.2025
+                  </p>
+                </div>
+                <Badge bg="warning" text="dark" pill>
+                  In Bearbeitung
+                </Badge>
+              </ListGroup.Item>
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">ORD-12343</h6>
+                  <p className="mb-0 text-muted small">
+                    Thomas Weber • 06.04.2025
+                  </p>
+                </div>
+                <Badge bg="info" pill>
+                  Versendet
+                </Badge>
+              </ListGroup.Item>
+            </ListGroup>
+            <Button variant="outline-primary" className="w-100 mt-3">
+              Alle Bestellungen anzeigen
+            </Button>
+          </Card.Body>
+        </Card>
 
-          {/* Added Articles Section */}
-          <Col md={4}>
-            <Card className="h-100 shadow-sm border-0">
-              <Card.Header className="bg-white border-bottom border-2 border-success">
-                <h5 className="mb-0 text-success fw-bold">
-                  Hinzugefügte Artikel
-                </h5>
-              </Card.Header>
-              <Card.Body>
-                <Form>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Artikelname</Form.Label>
-                    <Form.Control type="text" placeholder="Neuer Artikel" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Artikelnummer</Form.Label>
-                    <Form.Control type="text" placeholder="z.B. SKU-12345" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Kategorie</Form.Label>
-                    <Form.Select>
-                      <option>Bitte wählen</option>
-                      <option>Elektronik</option>
-                      <option>Kleidung</option>
-                      <option>Haushalt</option>
-                    </Form.Select>
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Hinzugefügt am</Form.Label>
-                    <Form.Control type="date" />
-                  </Form.Group>
-                  <Button variant="outline-success" className="w-100">
-                    Artikel hinzufügen
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
+        {/* Added Articles Section */}
+        <Card className="mb-4 shadow-sm border-0">
+          <Card.Header className="bg-white border-bottom border-2 border-success">
+            <h5 className="mb-0 text-success fw-bold">Hinzugefügte Artikel</h5>
+          </Card.Header>
+          <Card.Body>
+            <ListGroup variant="flush">
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">Samsung Galaxy S22</h6>
+                  <p className="mb-0 text-muted small">SKU-5678 • Elektronik</p>
+                </div>
+                <small className="text-muted">Heute</small>
+              </ListGroup.Item>
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">Nike Laufschuhe</h6>
+                  <p className="mb-0 text-muted small">SKU-8792 • Kleidung</p>
+                </div>
+                <small className="text-muted">Gestern</small>
+              </ListGroup.Item>
+              <ListGroup.Item className="d-flex justify-content-between align-items-center">
+                <div>
+                  <h6 className="mb-1">Philips Kaffeemaschine</h6>
+                  <p className="mb-0 text-muted small">SKU-2457 • Haushalt</p>
+                </div>
+                <small className="text-muted">05.04.2025</small>
+              </ListGroup.Item>
+            </ListGroup>
+            <Button variant="outline-success" className="w-100 mt-3">
+              Alle Artikel anzeigen
+            </Button>
+          </Card.Body>
+        </Card>
 
-          {/* Error Log Section */}
-          <Col md={4}>
-            <Card className="h-100 shadow-sm border-0">
-              <Card.Header className="bg-white border-bottom border-2 border-danger">
-                <h5 className="mb-0 text-danger fw-bold">Fehler Log</h5>
-              </Card.Header>
-              <Card.Body>
-                <Form>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Fehlertyp</Form.Label>
-                    <Form.Select>
-                      <option>Bitte wählen</option>
-                      <option>Systemfehler</option>
-                      <option>Benutzerfehler</option>
-                      <option>Netzwerkfehler</option>
-                    </Form.Select>
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Fehlerbeschreibung</Form.Label>
-                    <Form.Control
-                      as="textarea"
-                      rows={3}
-                      placeholder="Fehlerdetails eingeben"
-                    />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Zeitpunkt</Form.Label>
-                    <Form.Control type="datetime-local" />
-                  </Form.Group>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Priorität</Form.Label>
-                    <Form.Select>
-                      <option>Niedrig</option>
-                      <option>Mittel</option>
-                      <option>Hoch</option>
-                      <option>Kritisch</option>
-                    </Form.Select>
-                  </Form.Group>
-                  <Button variant="outline-danger" className="w-100">
-                    Log speichern
-                  </Button>
-                </Form>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
+        {/* Error Log Section */}
+        <Card className="mb-4 shadow-sm border-0">
+          <Card.Header className="bg-white border-bottom border-2 border-danger">
+            <h5 className="mb-0 text-danger fw-bold">Fehler Logs</h5>
+          </Card.Header>
+          <Card.Body>
+            <ListGroup variant="flush">
+              <ListGroup.Item>
+                <div className="d-flex justify-content-between">
+                  <h6 className="mb-1">Bestellfehler: ORD-12342</h6>
+                  <Badge bg="danger" pill>
+                    Kritisch
+                  </Badge>
+                </div>
+                <p className="mb-1">
+                  Zahlung fehlgeschlagen - Transaktionsfehler
+                </p>
+                <small className="text-muted">08.04.2025, 10:25 Uhr</small>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="d-flex justify-content-between">
+                  <h6 className="mb-1">Systemfehler</h6>
+                  <Badge bg="warning" text="dark" pill>
+                    Mittel
+                  </Badge>
+                </div>
+                <p className="mb-1">Datenbanksynchronisierung unterbrochen</p>
+                <small className="text-muted">07.04.2025, 14:12 Uhr</small>
+              </ListGroup.Item>
+              <ListGroup.Item>
+                <div className="d-flex justify-content-between">
+                  <h6 className="mb-1">Netzwerkfehler</h6>
+                  <Badge bg="info" pill>
+                    Niedrig
+                  </Badge>
+                </div>
+                <p className="mb-1">
+                  Kurzzeitiger Verbindungsabbruch zum Server
+                </p>
+                <small className="text-muted">06.04.2025, 08:45 Uhr</small>
+              </ListGroup.Item>
+            </ListGroup>
+            <Button variant="outline-danger" className="w-100 mt-3">
+              Alle Fehler anzeigen
+            </Button>
+          </Card.Body>
+        </Card>
       </Container>
     </div>
   );

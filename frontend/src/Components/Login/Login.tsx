@@ -10,6 +10,8 @@ import api from "../../utils/api";
 const Login = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [isUnverified, setIsUnverified] = useState(false);
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
 
   const navigateTo = useNavigate();
 
@@ -18,7 +20,7 @@ const Login = () => {
 
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};
-    if (!loginEmail.trim()) errors.email = "email is required";
+    if (!loginEmail.trim()) errors.email = "Email is required";
     if (!loginPassword) errors.password = "Password is required";
     return errors;
   };
@@ -27,6 +29,7 @@ const Login = () => {
     e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
   ) => {
     e.preventDefault();
+    setIsUnverified(false); // Reset unverified state on new login attempt
 
     const errors = validateForm();
 
@@ -51,10 +54,41 @@ const Login = () => {
         setStatusHolder("show");
       }
     } catch (error: any) {
+      // Check if this is a "not verified" error
+      if (error.response?.status === 403 && error.response?.data?.unverified) {
+        setIsUnverified(true);
+        setLoginStatus(
+          "Account not verified. Please verify your email to continue."
+        );
+      } else {
+        setLoginStatus(
+          error.response?.data?.message || "Server error. Please try again."
+        );
+      }
+      setStatusHolder("show");
+    }
+  };
+
+  const resendVerificationEmail = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResendingVerification(true);
+
+    try {
+      const response = await api.post("/resend-verification", {
+        email: loginEmail,
+      });
+
+      setLoginStatus("Verification email sent! Please check your inbox.");
+      setStatusHolder("show");
+      setIsUnverified(false); // Hide resend button after successful send
+    } catch (error: any) {
       setLoginStatus(
-        error.response?.data?.message || "Server error. Please try again."
+        error.response?.data?.message ||
+          "Failed to send verification email. Please try again."
       );
       setStatusHolder("show");
+    } finally {
+      setIsResendingVerification(false);
     }
   };
 
@@ -63,7 +97,7 @@ const Login = () => {
       setStatusHolder("show");
       const timer = setTimeout(() => {
         setStatusHolder("message");
-      }, 4000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, [loginStatus]);
@@ -77,11 +111,6 @@ const Login = () => {
       setStatusHolder("show");
     }
   }, []);
-
-  // const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.preventDefault();
-  //   loginUser(e);
-  // };
 
   return (
     <div className="d-flex vh-100">
@@ -181,10 +210,23 @@ const Login = () => {
               Login
             </button>
 
+            {/* Resend Verification Email Button - Only shows when needed */}
+            {isUnverified && (
+              <button
+                className="btn btn-outline-primary w-100 mt-2"
+                onClick={resendVerificationEmail}
+                disabled={isResendingVerification}
+              >
+                {isResendingVerification
+                  ? "Sending..."
+                  : "Resend Verification Email"}
+              </button>
+            )}
+
             {/*forgot password*/}
-            <span className="forgotPassword">
+            <div className="mt-3">
               <a href="/forgot-password">Forgot password?</a>
-            </span>
+            </div>
           </form>
         </div>
       </div>

@@ -138,22 +138,16 @@ const NavbarComponent = () => {
                 {initial}
               </Dropdown.Toggle>
               <Dropdown.Menu>
-                <Dropdown.Item onClick={() => navigate("../dashboard/profile")}>
+                <Dropdown.Item onClick={() => navigate("/profile")}>
                   Profile
                 </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => navigate("../dashboard/settings")}
-                >
+                <Dropdown.Item onClick={() => navigate("/settings")}>
                   Settings
                 </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => navigate("../dashboard/about-us")}
-                >
+                <Dropdown.Item onClick={() => navigate("/about-us")}>
                   About Us
                 </Dropdown.Item>
-                <Dropdown.Item
-                  onClick={() => navigate("../dashboard/categorizer")}
-                >
+                <Dropdown.Item onClick={() => navigate("/categorizer")}>
                   Categorizer
                 </Dropdown.Item>
                 <Dropdown.Divider />

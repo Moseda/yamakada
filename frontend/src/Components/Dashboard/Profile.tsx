@@ -154,71 +154,82 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div>
+    <>
       {/* Navbar */}
       <NavbarComponent />
-      <Container className="mt-5">
-        <Row className="justify-content-center">
-          <Col md={8} lg={6}>
-            <Card className="shadow-sm">
-              <Card.Header className="bg-primary text-white text-center">
-                <FaUser className="me-2" />
-                Profile
-              </Card.Header>
-              <Card.Body>
-                {message.type && (
-                  <Alert variant={message.type}>{message.text}</Alert>
-                )}
+      <div
+        className="dashboard-wrapper"
+        style={{
+          position: "relative",
+          minHeight: "100vh",
+          width: "100%",
+          background: "#f5f5f5",
+          overflow: "hidden",
+        }}
+      >
+        <Container className="mt-5">
+          <Row className="justify-content-center">
+            <Col md={8} lg={6}>
+              <Card className="shadow-sm">
+                <Card.Header className="bg-primary text-white text-center">
+                  <FaUser className="me-2" />
+                  Profile
+                </Card.Header>
+                <Card.Body>
+                  {message.type && (
+                    <Alert variant={message.type}>{message.text}</Alert>
+                  )}
 
-                {renderAvatar()}
+                  {renderAvatar()}
 
-                {!isEditing ? (
-                  <>
-                    <div className="text-center mb-4">
-                      <h4>{profile.email}</h4>
-                      <p className="text-muted">{profile.email}</p>
-                    </div>
-                    <div className="d-flex justify-content-between">
-                      <Button
-                        variant="outline-primary"
-                        onClick={handleEditToggle}
-                      >
-                        <FaCog className="me-2" /> Edit Profile
-                      </Button>
-                      <Button variant="outline-danger" onClick={handleLogout}>
-                        <FaSignOutAlt className="me-2" /> Logout
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <Form>
-                    <Form.Group className="mb-3">
-                      <Form.Label>Email</Form.Label>
-                      <Form.Control
-                        type="email"
-                        name="email"
-                        value={editedProfile.email}
-                        onChange={handleInputChange}
-                        disabled
-                      />
-                    </Form.Group>
+                  {!isEditing ? (
+                    <>
+                      <div className="text-center mb-4">
+                        <h4>{profile.email}</h4>
+                        <p className="text-muted">{profile.email}</p>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <Button
+                          variant="outline-primary"
+                          onClick={handleEditToggle}
+                        >
+                          <FaCog className="me-2" /> Edit Profile
+                        </Button>
+                        <Button variant="outline-danger" onClick={handleLogout}>
+                          <FaSignOutAlt className="me-2" /> Logout
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <Form>
+                      <Form.Group className="mb-3">
+                        <Form.Label>Email</Form.Label>
+                        <Form.Control
+                          type="email"
+                          name="email"
+                          value={editedProfile.email}
+                          onChange={handleInputChange}
+                          disabled
+                        />
+                      </Form.Group>
 
-                    <div className="d-flex justify-content-between">
-                      <Button variant="secondary" onClick={handleEditToggle}>
-                        Cancel
-                      </Button>
-                      <Button variant="primary" onClick={handleSaveProfile}>
-                        Save Changes
-                      </Button>
-                    </div>
-                  </Form>
-                )}
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+                      <div className="d-flex justify-content-between">
+                        <Button variant="secondary" onClick={handleEditToggle}>
+                          Cancel
+                        </Button>
+                        <Button variant="primary" onClick={handleSaveProfile}>
+                          Save Changes
+                        </Button>
+                      </div>
+                    </Form>
+                  )}
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </>
   );
 };
 

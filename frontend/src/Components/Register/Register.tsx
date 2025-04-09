@@ -22,6 +22,7 @@ const Register = () => {
   const [passwordErrors, setPasswordErrors] = useState<String[]>([]);
   const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [emailErrors, setEmailErrors] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   //State for validity of flieds
   const [isEmailValid, setIsEmailValid] = useState(true);
@@ -72,6 +73,12 @@ const Register = () => {
     }
 
     //validate Email
+    const emailValidationErrors = validateEmail(email);
+    if (emailValidationErrors.length > 0) {
+      setEmailErrors(emailValidationErrors);
+      setIsEmailValid(false);
+      return;
+    }
 
     // Validate password
     const errors: String[] = validatePassword(password);
@@ -88,24 +95,21 @@ const Register = () => {
       return;
     }
 
-    setRegisterStatus("Registration successful!");
+    setIsSubmitting(true);
     // API request using Axios
     Axios.post(`${apiUrl}/register`, {
       Email: email,
       Password: password,
     })
       .then(() => {
-        // Clear all fields
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
-        // Navigate to login after a delay
-        setTimeout(() => navigateTo("/"), 1);
+        // Navigate to verification page with email information
+        navigateTo("/email-verification", { state: { email } });
       })
       .catch((error) => {
         setRegisterStatus(
           error.response?.data?.message || "Registration failed"
         );
+        setIsSubmitting(false);
       });
   };
 
@@ -152,7 +156,7 @@ const Register = () => {
           {/* Form */}
           <form className="w-75" onSubmit={createUser}>
             {registerStatus && (
-              <span
+              <div
                 className={`alert ${
                   registerStatus.includes("successful")
                     ? "alert-success"
@@ -160,7 +164,7 @@ const Register = () => {
                 } mb-3`}
               >
                 {registerStatus}
-              </span>
+              </div>
             )}
 
             {/* Email Input */}
@@ -300,8 +304,23 @@ const Register = () => {
             </div>
 
             {/* Submit Button */}
-            <button type="submit" className="btn btn-primary w-100">
-              Registrieren
+            <button
+              type="submit"
+              className="btn btn-primary w-100"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span
+                    className="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  Verarbeitung...
+                </>
+              ) : (
+                "Registrieren"
+              )}
             </button>
           </form>
         </div>

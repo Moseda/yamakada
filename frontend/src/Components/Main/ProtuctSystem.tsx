@@ -18,7 +18,7 @@ import {
 } from "react-bootstrap";
 import { FaFilter, FaSearch, FaTags } from "react-icons/fa";
 import axios from "axios";
-import NavbarComponent from "./NavbarComponent";
+import NavbarComponent from "../Dashboard/NavbarComponent";
 
 interface Product {
   id: number;
@@ -46,9 +46,10 @@ interface Channel {
   channel_token: string;
   channel_type_id: number;
   channel_type_name?: string;
+  comment: string;
 }
 
-const ProductCategorizer: React.FC = () => {
+const ProductSystem: React.FC = () => {
   // State variables
   const [products, setProducts] = useState<Product[]>([]);
   const [manufacturers, setManufacturers] = useState<ProductManufacturer[]>([]);
@@ -249,7 +250,7 @@ const ProductCategorizer: React.FC = () => {
           <Card className="shadow-sm">
             <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
               <div>
-                <FaTags className="me-2" /> Product Categorizer
+                <FaTags className="me-2" /> Product System
               </div>
             </Card.Header>
             <Card.Body>
@@ -313,8 +314,8 @@ const ProductCategorizer: React.FC = () => {
                         <option value="">All Channels</option>
                         {channels.map((channel) => (
                           <option key={channel.id} value={channel.id}>
-                            {channel.channel_type_name ||
-                              `Channel ${channel.id}`}
+                            {channel.comment || channel.id} (
+                            {channel.channel_type_name})
                           </option>
                         ))}
                       </Form.Select>
@@ -551,4 +552,4 @@ const ProductCategorizer: React.FC = () => {
   );
 };
 
-export default ProductCategorizer;
+export default ProductSystem;

@@ -50,6 +50,12 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
       WHERE 1=1
     `;
 
+    let channelsQuery = `
+  SELECT c.id, c.comment, ct.name as channel_type_name
+  FROM channel c
+  JOIN channel_type ct ON c.channel_type_id = ct.id
+  ORDER BY ct.name, c.comment
+`;
     const queryParams: any[] = [];
 
     // Add search condition if provided
@@ -67,7 +73,7 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     // Add channel filter if provided
     if (channelId) {
-      query += ` AND p.channel_id = ?`;
+      channelsQuery += ` AND p.channel_type_id = ?`;
       queryParams.push(channelId);
     }
 
