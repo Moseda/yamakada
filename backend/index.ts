@@ -1,6 +1,6 @@
 // Load environment variables
 import * as dotenv from "dotenv";
-dotenv.config();
+dotenv.config({ override: true });
 
 import express, { Request, Response, NextFunction, response } from "express";
 import cors from "cors";
@@ -397,7 +397,6 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
       res.status(401).json({ message: "Invalid credentials" });
       return;
     }
-
     const accessToken = jwt.sign(
       { id: user.id, email: user.email },
       SECRET_KEY,

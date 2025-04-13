@@ -14,6 +14,7 @@ import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import SetNewPassword from "./Components/ResetPassword/SetNewPassword";
 import ProductSystem from "./Components/Main/ProtuctSystem";
 import EmailVerificationPage from "./Verification/EmailVerificationPage";
+import Hersteller from "./Components/Main/Hersteller";
 
 const router = createBrowserRouter([
   {
@@ -77,6 +78,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <ProductSystem />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/manufacturers",
+    element: (
+      <ProtectedRoute>
+        <Hersteller />
       </ProtectedRoute>
     ),
   },

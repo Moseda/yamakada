@@ -12,8 +12,12 @@ dist
 dist-ssr
 *.local
 frontend/src/LoginAssets
-backend/.env
 frontend/.env
+frontend/node_modules
+
+backend/.env
+backend/updateEnv.ts
+backend/node_modules
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

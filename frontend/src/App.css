@@ -2,9 +2,10 @@ body {
   padding-top: 0px;
 }
 
-html {
+--html {
   overflow-y: scroll;
   scrollbar-gutter: stable;
+  scroll-behavior: auto !important;
 }
 
 ::-webkit-scrollbar-track {

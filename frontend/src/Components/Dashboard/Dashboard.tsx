@@ -1,26 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Card,
   Dropdown,
   Button,
-  Col,
-  Form,
-  Row,
   ListGroup,
   Badge,
 } from "react-bootstrap";
 import { BsArrowRight, BsPlus } from "react-icons/bs";
 import NavbarComponent from "./NavbarComponent";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Dashboard = () => {
   // Sample data for dropdowns
   const [shops /*setShops*/] = useState(["Shop 1", "Shop 2", "Shop 3"]);
-  const [manufacturers /*setManufacturers*/] = useState([
-    "Hersteller 1",
-    "Hersteller 2",
-  ]);
+
+  const [manufacturers, setManufacturers] = useState([]);
+  const [manufacturersLoading, setManufacturersLoading] = useState(true);
+
   const [marketplaces /*setMarketplaces*/] = useState([
     "Amazon",
     "eBay",
@@ -39,14 +37,43 @@ const Dashboard = () => {
     navigate("/ProductSystem");
   };
 
+  //fetch manufacturers for the dropdown
+  useEffect(() => {
+    const fetchManufacturers = async () => {
+      try {
+        setManufacturersLoading(true);
+        const response = await axios.get(
+          "http://192.168.0.128:8000/manufacturers/?page=1&limit=50"
+        );
+
+        // Extract just the names for the dropdown
+        const manufacturerNames = response.data.map(
+          (m: { producer_name: any }) => m.producer_name
+        );
+        setManufacturers(manufacturerNames);
+
+        setManufacturersLoading(false);
+      } catch (err) {
+        console.error("Error fetching manufacturers:", err);
+        setManufacturersLoading(false);
+      }
+    };
+
+    fetchManufacturers();
+  }, []);
+
   const navigateToShop = () => {
     console.log(`Navigating to shop: ${selectedShop}`);
     // TODO navigation logic
   };
 
   const navigateToManufacturer = () => {
-    console.log(`Navigating to manufacturer: ${selectedManufacturer}`);
-    // TODO navigation logic
+    if (selectedManufacturer) {
+      console.log(`Navigating to manufacturer: ${selectedManufacturer}`);
+      navigate("/manufacturers", { state: { selectedManufacturer } });
+    } else {
+      navigate("/manufacturers");
+    }
   };
 
   const navigateToMarketplace = () => {
@@ -62,7 +89,7 @@ const Dashboard = () => {
 
   const addNewManufacturer = () => {
     console.log("Adding new manufacturer");
-    // TODO navigation logic to the manufacturer configuration page
+    navigate("/manufacturers", { state: { showAddModal: true } });
   };
 
   const addNewMarketplace = () => {
@@ -297,8 +324,10 @@ const Dashboard = () => {
                   id="manufacturer-dropdown"
                   size="sm"
                   className="w-100"
+                  disabled={manufacturersLoading}
                 >
-                  {selectedManufacturer || "Hersteller wählen"}
+                  {selectedManufacturer ||
+                    (manufacturersLoading ? "Loading..." : "Hersteller wählen")}
                 </Dropdown.Toggle>
                 <Dropdown.Menu className="w-100">
                   {manufacturers.map((manufacturer, idx) => (

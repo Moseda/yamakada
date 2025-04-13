@@ -18,6 +18,8 @@ const Login = () => {
   const [loginStatus, setLoginStatus] = useState("");
   const [statusHolder, setStatusHolder] = useState("message");
 
+  const [alertType, setAlertType] = useState("info");
+
   const validateForm = () => {
     const errors: { email?: string; password?: string } = {};
     if (!loginEmail.trim()) errors.email = "Email is required";
@@ -25,9 +27,7 @@ const Login = () => {
     return errors;
   };
 
-  const loginUser = async (
-    e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const loginUser = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsUnverified(false); // Reset unverified state on new login attempt
 
@@ -46,15 +46,28 @@ const Login = () => {
       });
 
       if (response.data.success) {
+        setAlertType("succes");
+        setLoginStatus("Login succesful! Redirecting...");
+        setStatusHolder("show");
         localStorage.setItem("accessToken", response.data.token);
         localStorage.setItem("refreshToken", response.data.refreshToken);
-        navigateTo("/dashboard");
+        setTimeout(() => {
+          navigateTo("/dashboard"), 1000;
+        });
       } else {
+        setAlertType("danger");
         setLoginStatus(response.data.message || "Login failed");
         setStatusHolder("show");
       }
     } catch (error: any) {
-      // Check if this is a "not verified" error
+      // hadle 401 not authorized
+      setAlertType("danger");
+
+      if (error.response?.status === 401) {
+        setLoginStatus(error.response?.data?.message || "Invalid credentials");
+      }
+
+      // Check if this is a "not verified" aka 403 (hadi li 9wdatha 3lik f refresh) error
       if (error.response?.status === 403 && error.response?.data?.unverified) {
         setIsUnverified(true);
         setLoginStatus(
@@ -78,10 +91,12 @@ const Login = () => {
         email: loginEmail,
       });
 
+      setAlertType("succes");
       setLoginStatus("Verification email sent! Please check your inbox.");
       setStatusHolder("show");
       setIsUnverified(false); // Hide resend button after successful send
     } catch (error: any) {
+      setAlertType("danger");
       setLoginStatus(
         error.response?.data?.message ||
           "Failed to send verification email. Please try again."
@@ -97,7 +112,7 @@ const Login = () => {
       setStatusHolder("show");
       const timer = setTimeout(() => {
         setStatusHolder("message");
-      }, 3000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [loginStatus]);
@@ -107,6 +122,7 @@ const Login = () => {
     const verified = urlParams.get("verified");
 
     if (verified === "true") {
+      setAlertType("succes");
       setLoginStatus("Email verified successfully! You can now log in.");
       setStatusHolder("show");
     }
@@ -154,14 +170,24 @@ const Login = () => {
 
           {/* Form */}
           <form className="w-75" onSubmit={loginUser}>
-            <div className="mb-3" style={{ textAlign: "center" }}>
-              <span
-                className={`alert alert-info alert-dismissible fade ${statusHolder}`}
-                role="alert"
-              >
-                {loginStatus}
-              </span>
-            </div>
+            {loginStatus && (
+              <div className="mb-3 d-flex justify-content-center">
+                <div
+                  className={`alert alert-${alertType} alert-dismissible fade ${statusHolder}`}
+                  role="alert"
+                  style={{
+                    display: "inline-block",
+                    maxWidth: "100%",
+                    textAlign: "center",
+                    margin: "0 auto",
+                    paddingRight: "1rem",
+                    paddingLeft: "1rem",
+                  }}
+                >
+                  {loginStatus}
+                </div>
+              </div>
+            )}
 
             {/* email Input */}
             <div className="mb-3">

@@ -1,4 +1,4 @@
-FROM node:23 AS builder
+FROM node:23-slim
 
 WORKDIR /app
 
@@ -9,20 +9,13 @@ RUN apt-get update && apt-get install -y \
     g++ \
     build-essential
 
-# Copy package files and install dependencies
+# Copy package files first (for better caching)
 COPY package*.json ./
-RUN npm install --build-from-source
 
-# Specifically rebuild bcrypt
-RUN npm rebuild bcrypt --build-from-source
+# Install dependencies and specifically rebuild bcrypt
+RUN npm install && npm rebuild bcrypt --build-from-source
 
-# Second stage
-FROM node:23
-
-WORKDIR /app
-
-# Copy built node modules and other files
-COPY --from=builder /app/node_modules ./node_modules
+# Copy the rest of the app
 COPY . .
 
 # Install TypeScript globally

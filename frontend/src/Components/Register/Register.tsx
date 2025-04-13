@@ -156,14 +156,24 @@ const Register = () => {
           {/* Form */}
           <form className="w-75" onSubmit={createUser}>
             {registerStatus && (
-              <div
-                className={`alert ${
-                  registerStatus.includes("successful")
-                    ? "alert-success"
-                    : "alert-danger"
-                } mb-3`}
-              >
-                {registerStatus}
+              <div className="mb-3 d-flex justify-content-center">
+                <div
+                  className={`alert ${
+                    registerStatus.includes("successful")
+                      ? "alert-success"
+                      : "alert-danger"
+                  } mb-3`}
+                  style={{
+                    display: "inline-block",
+                    maxWidth: "100%",
+                    textAlign: "center",
+                    margin: "0 auto",
+                    paddingRight: "1rem",
+                    paddingLeft: "1rem",
+                  }}
+                >
+                  {registerStatus}
+                </div>
               </div>
             )}
 
