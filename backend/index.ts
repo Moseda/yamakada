@@ -6,15 +6,26 @@ import express, { Request, Response, NextFunction, response } from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fs from "fs";
+
 import db from "./db"; // Import database connection
 import sendEmail from "./mailer";
 import { verifyToken } from "./Middlewares/auth";
 import settingsRouter from "./routes/settings";
 import productRouter from "./routes/categorizer";
 
+//routes
+import fileRoutes from "./routes/fileRoutes";
+import { errorHandler } from "./Middlewares/errorHandler";
+
 const app = express();
+
 app.use(express.json());
 
+app.use(express.urlencoded({ extended: true }));
+
+//cors
 app.use(
   cors({
     origin: [
@@ -22,16 +33,11 @@ app.use(
       `${process.env.FRONTEND_URL}`,
       "http://192.168.56.1:5173",
       "http://172.19.240.1:5173",
+      "http://192.168.0.128:8000",
     ],
     credentials: true,
   })
 );
-
-const SECRET_KEY = process.env.SECRET_KEY;
-
-if (!SECRET_KEY) {
-  throw new Error("SECRET_KEY environment variable is not set");
-}
 
 // Start server
 app.listen(3002, "0.0.0.0", () => {
@@ -39,6 +45,22 @@ app.listen(3002, "0.0.0.0", () => {
   console.log("Try connecting at:");
   console.log(`- http://localhost:3002`);
   console.log(`- ${process.env.API_URL}`);
+});
+const SECRET_KEY = process.env.SECRET_KEY;
+
+if (!SECRET_KEY) {
+  throw new Error("SECRET_KEY environment variable is not set");
+}
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Routes
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "Server is up and running" });
 });
 
 // User registration
@@ -215,6 +237,7 @@ app.get(
   }
 );
 
+//resend verification
 app.post(
   "/resend-verification",
   async (req: Request, res: Response): Promise<any> => {
@@ -423,6 +446,7 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
   }
 });
 
+//forgot-password
 app.post(
   "/forgot-password",
   async (req: Request, res: Response): Promise<any> => {
@@ -565,6 +589,7 @@ app.post(
   }
 );
 
+//reset password with token
 app.get(
   "/reset-password/:token",
   async (req: Request, res: Response): Promise<any> => {
@@ -585,6 +610,7 @@ app.get(
   }
 );
 
+//complete-reset-password
 app.post(
   "/complete-reset-password",
   async (req: Request, res: Response): Promise<any> => {
@@ -616,10 +642,12 @@ app.post(
   }
 );
 
+//verify-token
 app.get("/verify-token", verifyToken, (req: any, res: any) => {
   res.json({ isValid: true, user: (req as any).user });
 });
 
+//refresh-token
 app.post(
   "/refresh-token",
   async (req: Request, res: Response): Promise<any> => {
@@ -696,5 +724,11 @@ app.use("/user/settings", settingsRouter);
 
 //made some kind of categorizer
 app.use("/api", productRouter);
+
+// Add file upload routes
+app.use("/api/fileRoutes", fileRoutes);
+
+// Error handling middleware (best be last)
+app.use(errorHandler);
 
 export default app;

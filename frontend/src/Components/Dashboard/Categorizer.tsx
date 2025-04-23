@@ -233,8 +233,6 @@ const ProductCategorizer: React.FC = () => {
 
   return (
     <>
-      {/* Navbar */}
-      <NavbarComponent />
       <div
         className="dashboard-wrapper"
         style={{
@@ -245,6 +243,8 @@ const ProductCategorizer: React.FC = () => {
           overflow: "hidden",
         }}
       >
+        {/* Navbar */}
+        <NavbarComponent />
         <Container fluid className="mt-4">
           <Card className="shadow-sm">
             <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">

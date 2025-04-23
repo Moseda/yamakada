@@ -93,20 +93,20 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     const countParams: any[] = [];
 
-    // Add search condition if provided
+    // search
     if (search) {
       countQuery += ` AND (p.product_identifier LIKE ? OR p.sku LIKE ? OR p.ean LIKE ?)`;
       const searchTerm = `%${search}%`;
       countParams.push(searchTerm, searchTerm, searchTerm);
     }
 
-    // Add manufacturer filter if provided
+    //  manufacturer
     if (manufacturerId) {
       countQuery += ` AND p.manufacturer_id = ?`;
       countParams.push(manufacturerId);
     }
 
-    // Add channel filter if provided
+    //  channel
     if (channelId) {
       countQuery += ` AND p.channel_id = ?`;
       countParams.push(channelId);
@@ -116,9 +116,9 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     res.json({
       products,
-      total: totalCount[0].total,
+      total: page,
       page,
-      pages: Math.ceil(totalCount[0].total / limit),
+      pages: Math.ceil(page / limit),
     });
   } catch (err) {
     console.error("Error fetching products:", err);

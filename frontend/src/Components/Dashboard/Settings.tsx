@@ -120,8 +120,6 @@ const Settings: React.FC = () => {
 
   return (
     <>
-      {/* Navbar */}
-      <NavbarComponent />
       <div
         className="dashboard-wrapper"
         style={{
@@ -132,6 +130,8 @@ const Settings: React.FC = () => {
           overflow: "hidden",
         }}
       >
+        {/* Navbar */}
+        <NavbarComponent />
         <Container className="mt-5">
           <Row className="justify-content-center">
             <Col md={10} lg={8}>

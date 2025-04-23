@@ -14,7 +14,8 @@ import ResetPassword from "./Components/ResetPassword/ResetPassword";
 import SetNewPassword from "./Components/ResetPassword/SetNewPassword";
 import ProductSystem from "./Components/Main/ProtuctSystem";
 import EmailVerificationPage from "./Verification/EmailVerificationPage";
-import Hersteller from "./Components/Main/Hersteller";
+import Channels from "./Components/Main/Channels";
+import FilesOverview from "./Components/Uploader/FilesOverview";
 
 const router = createBrowserRouter([
   {
@@ -82,10 +83,18 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: "/manufacturers",
+    path: "/channels",
     element: (
       <ProtectedRoute>
-        <Hersteller />
+        <Channels />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/filesOverview",
+    element: (
+      <ProtectedRoute>
+        <FilesOverview />
       </ProtectedRoute>
     ),
   },

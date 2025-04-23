@@ -8,8 +8,6 @@ const AboutUs: React.FC = () => {
   //NAVBAR justCopyOnAllPageForNow
   return (
     <>
-      {/* Navbar */}
-      <NavbarComponent />
       <div
         className="dashboard-wrapper"
         style={{
@@ -20,6 +18,8 @@ const AboutUs: React.FC = () => {
           overflow: "hidden",
         }}
       >
+        {/* Navbar */}
+        <NavbarComponent />
         <Container className="mt-5">
           <Row>
             <Col>
