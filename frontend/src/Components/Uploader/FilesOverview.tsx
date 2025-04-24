@@ -1,6 +1,6 @@
 // File: frontend\src\Components\Uploader\FilesOverview.tsx
-import { useState, useRef, useEffect } from "react";
-
+import React, { useState, useRef, useEffect } from "react";
+import { extractErrorMessage } from "../errors/errorUtils";
 // Get API URL from environment variables
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
 
@@ -148,9 +148,10 @@ const FileUploadComponent = () => {
       // Upload successful
       setUploadSuccess(true);
       console.log("Upload successful!");
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      setErrorMessage(error.message || "Upload failed. Please try again.");
+    } catch (error: unknown) {
+      const userFriendlyMessage = extractErrorMessage(error);
+      setErrorMessage(userFriendlyMessage);
+      setUploadSuccess(false);
     } finally {
       setIsUploading(false);
     }

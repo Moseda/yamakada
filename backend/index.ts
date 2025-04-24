@@ -2,28 +2,57 @@
 import * as dotenv from "dotenv";
 dotenv.config({ override: true });
 
-import express, { Request, Response, NextFunction, response } from "express";
+//core libraries
+import express from "express";
 import cors from "cors";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import path from "path";
 import fs from "fs";
+import { ResultSetHeader } from "mysql2";
 
-import db from "./db"; // Import database connection
+// Custom utilities/services
 import sendEmail from "./mailer";
-import { verifyToken } from "./Middlewares/auth";
-import settingsRouter from "./routes/settings";
-import productRouter from "./routes/categorizer";
+import db from "./db"; // Import database connection
 
-//routes
-import fileRoutes from "./routes/fileRoutes";
+//middlewares
+import { verifyToken } from "./Middlewares/auth";
 import { errorHandler } from "./Middlewares/errorHandler";
 
+//routes
+import settingsRouter from "./routes/settings";
+import productRouter from "./routes/categorizer";
+import fileRoutes from "./routes/fileRoutes";
+
+//types
+import type { Request, Response } from "express";
+import type { User } from "./types/user";
+
+//interfaces
+interface TokenPayload {
+  id: number;
+  email?: string;
+}
+
+interface AuthenticatedRequest extends Request {
+  user?: TokenPayload;
+}
+
+//constants (before components)
 const app = express();
+const SECRET_KEY = process.env.SECRET_KEY;
+const uploadsDir = path.join(__dirname, "uploads");
 
 app.use(express.json());
-
 app.use(express.urlencoded({ extended: true }));
+
+if (!SECRET_KEY) {
+  throw new Error("SECRET_KEY environment variable is not set");
+}
+// Create uploads directory if it doesn't exist
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 //cors
 app.use(
@@ -46,36 +75,25 @@ app.listen(3002, "0.0.0.0", () => {
   console.log(`- http://localhost:3002`);
   console.log(`- ${process.env.API_URL}`);
 });
-const SECRET_KEY = process.env.SECRET_KEY;
 
-if (!SECRET_KEY) {
-  throw new Error("SECRET_KEY environment variable is not set");
-}
-
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Routes
+// health dunno why
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is up and running" });
 });
 
 // User registration
-app.post("/register", async (req: Request, res: Response): Promise<any> => {
+app.post("/register", async (req: Request, res: Response): Promise<void> => {
   const { Email: sentEmail, Password: sentPassword } = req.body;
 
   try {
     // Check if email is already taken
-    const [existingUsers]: any = await db.query(
+    const [existingUsers] = await db.query<User[]>(
       "SELECT email FROM user WHERE email = ?",
       [sentEmail]
     );
 
     if (existingUsers.length > 0) {
-      return res.status(409).json({
+      res.status(409).json({
         message: "Email already taken",
       });
     }
@@ -215,18 +233,19 @@ app.post("/register", async (req: Request, res: Response): Promise<any> => {
 // Email verification
 app.get(
   "/verify/:token",
-  async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
       const { token } = req.params;
       const decoded = jwt.verify(token, SECRET_KEY) as { email: string };
 
-      const [result]: any = await db.query(
+      const [result] = await db.query<ResultSetHeader>(
         "UPDATE user SET is_verified = 1 WHERE email = ?",
         [decoded.email]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(400).json({ message: "Email already verified" });
+        res.status(400).json({ message: "Email already verified" });
+        return;
       }
 
       res.json({ message: "Email verified successfully!" });
@@ -240,28 +259,31 @@ app.get(
 //resend verification
 app.post(
   "/resend-verification",
-  async (req: Request, res: Response): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body;
 
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      res.status(400).json({ message: "Email is required" });
+      return;
     }
 
     try {
       // Check if user exists and isn't already verified
-      const [users]: any = await db.query(
+      const [users] = await db.query<User[]>(
         "SELECT email, is_verified FROM user WHERE email = ?",
         [email]
       );
 
       if (users.length === 0) {
-        return res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "User not found" });
+        return;
       }
 
       const user = users[0];
 
       if (user.is_verified === 1) {
-        return res.status(200).json({ message: "Email is already verified" });
+        res.status(200).json({ message: "Email is already verified" });
+        return;
       }
 
       // Generate new verification token
@@ -386,9 +408,10 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
   console.log("Login Attempt:", { loginEmail, loginPassword: "[REDACTED]" }); // Add this
 
   try {
-    const [users]: any = await db.query("SELECT * FROM user WHERE email = ?", [
-      loginEmail,
-    ]);
+    const [users] = await db.query<User[]>(
+      "SELECT * FROM user WHERE email = ?",
+      [loginEmail]
+    );
 
     //console.log("Users Found:", users); // Add this for debugging
 
@@ -449,17 +472,18 @@ app.post("/login", async (req: Request, res: Response): Promise<void> => {
 //forgot-password
 app.post(
   "/forgot-password",
-  async (req: Request, res: Response): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { email } = req.body;
 
     try {
-      const [users]: any = await db.query(
+      const [users] = await db.query<User[]>(
         "SELECT * FROM user WHERE email = ?",
         [email]
       );
 
       if (users.length === 0) {
-        return res.status(404).json({ message: "Email not found" });
+        res.status(404).json({ message: "Email not found" });
+        return;
       }
 
       const user = users[0];
@@ -592,7 +616,7 @@ app.post(
 //reset password with token
 app.get(
   "/reset-password/:token",
-  async (req: Request, res: Response): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { token } = req.params;
 
     try {
@@ -613,7 +637,7 @@ app.get(
 //complete-reset-password
 app.post(
   "/complete-reset-password",
-  async (req: Request, res: Response): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { token, password } = req.body;
 
     try {
@@ -625,13 +649,14 @@ app.post(
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Update user's password
-      const [result]: any = await db.query(
+      const [result] = await db.query<ResultSetHeader>(
         "UPDATE user SET password = ? WHERE email = ?",
         [hashedPassword, email]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "User not found" });
+        return;
       }
 
       res.json({ message: "Password successfully reset!" });
@@ -643,22 +668,27 @@ app.post(
 );
 
 //verify-token
-app.get("/verify-token", verifyToken, (req: any, res: any) => {
-  res.json({ isValid: true, user: (req as any).user });
-});
+app.get(
+  "/verify-token",
+  verifyToken,
+  (req: AuthenticatedRequest, res: Response) => {
+    res.json({ isValid: true, user: req.user });
+  }
+);
 
 //refresh-token
 app.post(
   "/refresh-token",
-  async (req: Request, res: Response): Promise<any> => {
+  async (req: Request, res: Response): Promise<void> => {
     const { refreshToken } = req.body;
     if (!refreshToken) {
       console.log("No refresh token provided");
-      return res.status(403).json({ message: "No refresh token provided" });
+      res.status(403).json({ message: "No refresh token provided" });
+      return;
     }
 
     try {
-      const [users]: any = await db.query(
+      const [users] = await db.query<User[]>(
         "SELECT * FROM user WHERE refresh_token = ?",
         [refreshToken]
       );
@@ -667,7 +697,8 @@ app.post(
 
       if (users.length === 0) {
         console.log("No user found for refresh token");
-        return res.status(403).json({ message: "Invalid refresh token" });
+        res.status(403).json({ message: "Invalid refresh token" });
+        return;
       }
 
       const user = users[0];
@@ -685,7 +716,8 @@ app.post(
         res.json({ accessToken: newAccessToken });
       } catch (err) {
         console.error("JWT Verification Error:", err);
-        return res.status(403).json({ message: "Invalid refresh token" });
+        res.status(403).json({ message: "Invalid refresh token" });
+        return;
       }
     } catch (err) {
       console.error("Database Query Error:", err);
@@ -695,29 +727,37 @@ app.post(
 );
 
 // Get user profile
-app.get("/user/profile", verifyToken, async (req: any, res: any) => {
-  try {
-    const userId = req.user.id; // Extract user ID from the decoded token
+app.get(
+  "/user/profile",
+  verifyToken,
+  async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user?.id; // Extract user ID from the decoded token
 
-    const [users]: any = await db.query(
-      "SELECT id, email FROM user WHERE id = ?",
-      [userId]
-    );
+      if (!userId) {
+        res.status(400).json({ error: "User ID missing in token" });
+      }
 
-    if (users.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      const [users] = await db.query<User[]>(
+        "SELECT id, email FROM user WHERE id = ?",
+        [userId]
+      );
+
+      if (users.length === 0) {
+        res.status(404).json({ message: "User not found" });
+      }
+
+      const user = users[0];
+
+      res.json({
+        email: user.email,
+      });
+    } catch (err) {
+      console.error("Error fetching user profile:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
-
-    const user = users[0];
-
-    res.json({
-      email: user.email,
-    });
-  } catch (err) {
-    console.error("Error fetching user profile:", err);
-    res.status(500).json({ message: "Internal server error" });
   }
-});
+);
 
 // Update user settings
 app.use("/user/settings", settingsRouter);

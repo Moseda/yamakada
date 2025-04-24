@@ -9,10 +9,21 @@ import {
 } from "../utils/fileParser";
 import { AppError } from "../utils/appError";
 
+// Define a generic structure type
+type Structure = Record<string, unknown>;
+type ParsedData = Record<string, unknown>[];
+
 // Extended Request interface to include the properties we add
 interface ExtendedRequest extends Request {
-  parsedData?: any;
-  structure?: any;
+  parsedData?: ParsedData;
+  structure?: Structure;
+}
+
+// File parser return format
+interface FileParseResult {
+  parsedData: ParsedData;
+  structure: Structure;
+  isBMEcat?: boolean;
 }
 
 export const validateFileType = async (
@@ -28,78 +39,76 @@ export const validateFileType = async (
     const fileExtension = req.file.originalname.split(".").pop()?.toLowerCase();
     let fileType = req.body.fileType || "";
     let isValid = false;
-    let parsedData: any;
-    let structure: any;
+    let parsedData: ParsedData = [];
+    let structure: Structure = {};
 
     // Perform deep validation based on extension or mime type
     try {
+      let result: FileParseResult;
       switch (fileExtension) {
         case "json":
           // Validate JSON format and get parsed data
-          const jsonResult = await parseJsonFile(filePath);
-          parsedData = jsonResult.parsedData;
-          structure = jsonResult.structure;
+          result = await parseJsonFile(filePath);
           fileType = "JSON";
-          isValid = true;
           break;
 
         case "csv":
           // Validate CSV format and get parsed data
-          const csvResult: any = await parseCsvFile(filePath);
-          parsedData = csvResult.parsedData;
-          structure = csvResult.structure;
+          result = await parseCsvFile(filePath);
           fileType = "CSV";
-          isValid = true;
           break;
 
         case "xlsx":
         case "xls":
           // Validate Excel format and get parsed data
-          const excelResult = await parseExcelFile(filePath);
-          parsedData = excelResult.parsedData;
-          structure = excelResult.structure;
+          result = await parseExcelFile(filePath);
           fileType = "EXCEL";
-          isValid = true;
           break;
 
         case "xml":
           // Validate XML and detect if it's BMEcat
-          const xmlResult = await parseXmlFile(filePath);
-          parsedData = xmlResult.parsedData;
-          structure = xmlResult.structure;
-
-          if (xmlResult.isBMEcat) {
-            fileType = "BMECAT";
-          } else {
-            fileType = "XML";
-          }
-          isValid = true;
+          result = await parseXmlFile(filePath);
+          fileType = result.isBMEcat ? "BMECAT" : "XML";
           break;
 
         default:
           throw new Error(`Unsupported file format: ${fileExtension}`);
       }
-    } catch (error: any) {
-      // If validation fails, delete the uploaded file
-      try {
-        await fs.unlink(filePath);
-      } catch (unlinkError) {
-        console.error("Error deleting invalid file:", unlinkError);
-      }
+      parsedData = result.parsedData;
+      structure = result.structure;
+      isValid = true;
+    } catch (error: unknown) {
+      await fs
+        .unlink(filePath)
+        .catch((unlinkError) =>
+          console.error("Error deleting invalid file:", unlinkError)
+        );
 
-      return next(new AppError(`Invalid file format: ${error.message}`, 400));
+      return next(
+        new AppError(
+          `Invalid file format: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`,
+          400
+        )
+      );
     }
 
-    // If we reach here, file is valid
-    req.body.fileType = fileType;
-
-    // Add parsed data and structure to the request object for the controller
-    req.parsedData = parsedData;
-    req.structure = structure;
-
-    next();
-  } catch (error: any) {
+    if (isValid) {
+      req.body.fileType = fileType;
+      req.parsedData = parsedData;
+      req.structure = structure;
+      next();
+    }
+  } catch (error: unknown) {
     console.error("File validation error:", error);
-    next(new AppError(`Error validating file: ${error.message}`, 500));
+    next(
+      new AppError(
+        `Error validating file: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        500
+      )
+    );
   }
 };

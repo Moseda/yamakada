@@ -1,4 +1,5 @@
 // File: backend/repositories/fileRepository.ts
+import { ResultSetHeader, RowDataPacket } from "mysql2";
 import db from "../db";
 
 // File metadata interface
@@ -11,11 +12,19 @@ interface FileMetadata {
   uploadDate: Date;
 }
 
+// Parsed file data and structure types
+type FileData = Record<string, unknown>[];
+type Structure = Record<string, unknown>;
+
+interface InsertResult extends ResultSetHeader {
+  insertId: number;
+}
+
 // Save file metadata to the database
 export const saveFileMetadata = async (
   fileData: FileMetadata
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO files (filename, file_path, size, mimetype, file_type, upload_date) 
      VALUES (?, ?, ?, ?, ?, ?)`,
     [
@@ -34,10 +43,10 @@ export const saveFileMetadata = async (
 // Save JSON data to the database
 export const saveJsonData = async (
   fileId: number,
-  data: any,
-  structure: any
+  data: FileData,
+  structure: Structure
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO json_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
@@ -48,10 +57,10 @@ export const saveJsonData = async (
 // Save CSV data to the database
 export const saveCsvData = async (
   fileId: number,
-  data: any[],
-  structure: any
+  data: FileData,
+  structure: Structure
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO csv_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
@@ -62,10 +71,10 @@ export const saveCsvData = async (
 // Save Excel data to the database
 export const saveExcelData = async (
   fileId: number,
-  data: any,
-  structure: any
+  data: FileData,
+  structure: Structure
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO excel_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
@@ -76,10 +85,10 @@ export const saveExcelData = async (
 // Save XML data to the database
 export const saveXmlData = async (
   fileId: number,
-  data: any,
-  structure: any
+  data: FileData,
+  structure: Structure
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO xml_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
@@ -90,10 +99,10 @@ export const saveXmlData = async (
 // Save BMEcat data to the database
 export const saveBmecatData = async (
   fileId: number,
-  data: any,
-  structure: any
+  data: FileData,
+  structure: Structure
 ): Promise<number> => {
-  const [result]: any = await db.execute(
+  const [result] = await db.execute<InsertResult>(
     `INSERT INTO bmecat_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
@@ -101,9 +110,20 @@ export const saveBmecatData = async (
   return result.insertId;
 };
 
+// File row from DB
+interface FileRow extends RowDataPacket {
+  id: number;
+  filename: string;
+  file_path: string;
+  size: number;
+  mimetype: string;
+  file_type: string;
+  upload_date: string;
+}
+
 // Get all files
-export const getAllFiles = async () => {
-  const [rows] = await db.execute(
+export const getAllFiles = async (): Promise<FileRow[]> => {
+  const [rows] = await db.execute<FileRow[]>(
     `SELECT id, filename, file_path, size, mimetype, file_type, upload_date 
      FROM files 
      ORDER BY upload_date DESC`
@@ -113,8 +133,8 @@ export const getAllFiles = async () => {
 };
 
 // Get file by ID
-export const getFileById = async (fileId: number) => {
-  const [rows]: any = await db.execute(
+export const getFileById = async (fileId: number): Promise<FileRow | null> => {
+  const [rows] = await db.execute<FileRow[]>(
     `SELECT id, filename, file_path, size, mimetype, file_type, upload_date 
      FROM files 
      WHERE id = ?`,
@@ -124,9 +144,18 @@ export const getFileById = async (fileId: number) => {
   return rows[0] || null;
 };
 
+// File data structure from data tables
+interface FileDataRow extends FileRow {
+  data: string;
+  structure: string;
+}
+
 // Get file data based on file type
-export const getFileData = async (fileId: number, fileType: string) => {
-  let tableName;
+export const getFileData = async (
+  fileId: number,
+  fileType: string
+): Promise<{ data: FileData; structure: Structure } | null> => {
+  let tableName: string;
 
   switch (fileType.toUpperCase()) {
     case "JSON":
@@ -148,7 +177,7 @@ export const getFileData = async (fileId: number, fileType: string) => {
       throw new Error("Unsupported file type");
   }
 
-  const [rows]: any = await db.execute(
+  const [rows] = await db.execute<FileDataRow[]>(
     `SELECT data, structure FROM ${tableName} WHERE file_id = ?`,
     [fileId]
   );

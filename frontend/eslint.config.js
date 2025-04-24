@@ -17,7 +17,7 @@ export default defineConfig([
   },
   tseslint.configs.recommended,
   {
-    files: ["**/*.{jsx,tsx}"],
+    files: ["**/*.{tsx}"],
     plugins: { react: pluginReact },
     rules: pluginReact.configs.recommended.rules,
     settings: {

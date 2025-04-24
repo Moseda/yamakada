@@ -1,13 +1,18 @@
-// File: backend/controllers/fileController.ts
+// imports
 import { Request, Response, NextFunction } from "express";
 import * as fileRepository from "../repositories/fileRepositories";
 import { AppError } from "../utils/appError";
 
+//interfaces
+// Define the expected structure of parsed data and structure
+interface ParsedStructure {
+  [key: string]: unknown;
+}
 // Extend Request type for TypeScript
 interface RequestWithParsedData extends Request {
-  parsedData?: any;
-  structure?: any;
-  file?: any; // For the uploaded file from multer
+  parsedData?: Record<string, unknown>[];
+  structure?: ParsedStructure;
+  file?: Express.Multer.File; // For the uploaded file from multer
 }
 
 export const uploadFile = async (
@@ -103,14 +108,20 @@ export const uploadFile = async (
         filename: req.file.originalname,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error during file upload processing:", error);
 
     if (error instanceof AppError) {
       return next(error);
     }
 
-    next(new AppError(`Error processing uploaded file: ${error.message}`, 500));
+    if (error instanceof Error) {
+      return next(
+        new AppError(`Error processing uploaded file: ${error.message}`, 500)
+      );
+    }
+
+    next(new AppError(`Unexpected error during upload.`, 500));
   }
 };
 
@@ -120,14 +131,27 @@ export const getFiles = async (
   next: NextFunction
 ) => {
   try {
-    const files: any = await fileRepository.getAllFiles();
+    function isRecordArray(
+      data: unknown
+    ): data is Array<Record<string, unknown>> {
+      return (
+        Array.isArray(data) &&
+        data.every((item) => typeof item === "object" && item !== null)
+      );
+    }
 
+    const result = await fileRepository.getAllFiles();
+    const files = isRecordArray(result) ? result : [];
     res.status(200).json({
       success: true,
       results: files.length,
       data: files,
     });
-  } catch (error: any) {
-    next(new AppError(`Error retrieving files: ${error.message}`, 500));
+  } catch (error) {
+    if (error instanceof Error) {
+      next(new AppError(`Error retrieving files: ${error.message}`, 500));
+    } else {
+      next(new AppError("Unknown error retrieving files", 500));
+    }
   }
 };
