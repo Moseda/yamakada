@@ -50,12 +50,6 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
       WHERE 1=1
     `;
 
-    let channelsQuery = `
-  SELECT c.id, c.comment, ct.name as channel_type_name
-  FROM channel c
-  JOIN channel_type ct ON c.channel_type_id = ct.id
-  ORDER BY ct.name, c.comment
-`;
     const queryParams: any[] = [];
 
     // Add search condition if provided
@@ -73,7 +67,7 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     // Add channel filter if provided
     if (channelId) {
-      channelsQuery += ` AND p.channel_type_id = ?`;
+      query += ` AND p.channel_id = ?`;
       queryParams.push(channelId);
     }
 
@@ -93,20 +87,20 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     const countParams: any[] = [];
 
-    // search
+    // Add search condition if provided
     if (search) {
       countQuery += ` AND (p.product_identifier LIKE ? OR p.sku LIKE ? OR p.ean LIKE ?)`;
       const searchTerm = `%${search}%`;
       countParams.push(searchTerm, searchTerm, searchTerm);
     }
 
-    //  manufacturer
+    // Add manufacturer filter if provided
     if (manufacturerId) {
       countQuery += ` AND p.manufacturer_id = ?`;
       countParams.push(manufacturerId);
     }
 
-    //  channel
+    // Add channel filter if provided
     if (channelId) {
       countQuery += ` AND p.channel_id = ?`;
       countParams.push(channelId);
@@ -116,9 +110,9 @@ productRouter.get("/products", verifyToken, async (req: any, res: any) => {
 
     res.json({
       products,
-      total: page,
+      total: totalCount[0].total,
       page,
-      pages: Math.ceil(page / limit),
+      pages: Math.ceil(totalCount[0].total / limit),
     });
   } catch (err) {
     console.error("Error fetching products:", err);

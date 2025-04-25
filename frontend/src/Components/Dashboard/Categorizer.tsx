@@ -1,5 +1,3 @@
-const apiUrl = import.meta.env.VITE_API_URL;
-
 import React, { useState, useEffect } from "react";
 import {
   Container,
@@ -18,7 +16,6 @@ import {
 } from "react-bootstrap";
 import { FaFilter, FaSearch, FaTags } from "react-icons/fa";
 import axios from "axios";
-import NavbarComponent from "./NavbarComponent";
 
 interface Product {
   id: number;
@@ -84,7 +81,7 @@ const ProductCategorizer: React.FC = () => {
 
         // Fetch all required data
         const [productsRes, manufacturersRes, channelsRes] = await Promise.all([
-          axios.get(`${apiUrl}/api/products`, {
+          axios.get("http://localhost:3002/api/products", {
             headers: { Authorization: `Bearer ${token}` },
             params: {
               page: currentPage,
@@ -96,10 +93,10 @@ const ProductCategorizer: React.FC = () => {
               direction: sortDirection,
             },
           }),
-          axios.get(`${apiUrl}/api/manufacturers`, {
+          axios.get("http://localhost:3002/api/manufacturers", {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${apiUrl}/api/channels`, {
+          axios.get("http://localhost:3002/api/channels", {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);
@@ -164,7 +161,7 @@ const ProductCategorizer: React.FC = () => {
     try {
       const token = localStorage.getItem("accessToken");
       await axios.post(
-        `${apiUrl}/api/products/bulk`,
+        "http://localhost:3002/api/products/bulk",
         {
           productIds: selectedProducts,
           action: bulkAction,
@@ -232,322 +229,299 @@ const ProductCategorizer: React.FC = () => {
   }
 
   return (
-    <>
-      <div
-        className="dashboard-wrapper"
-        style={{
-          position: "relative",
-          minHeight: "120vh",
-          width: "100%",
-          background: "#f5f5f5",
-          overflow: "hidden",
-        }}
-      >
-        {/* Navbar */}
-        <NavbarComponent />
-        <Container fluid className="mt-4">
-          <Card className="shadow-sm">
-            <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-              <div>
-                <FaTags className="me-2" /> Product Categorizer
-              </div>
-            </Card.Header>
-            <Card.Body>
-              {message.type && (
-                <Alert
-                  variant={message.type}
-                  dismissible
-                  onClose={() => setMessage({ type: null, text: "" })}
-                >
-                  {message.text}
-                </Alert>
-              )}
+    <Container fluid className="mt-4">
+      <Card className="shadow-sm">
+        <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+          <div>
+            <FaTags className="me-2" /> Product Categorizer
+          </div>
+        </Card.Header>
+        <Card.Body>
+          {message.type && (
+            <Alert
+              variant={message.type}
+              dismissible
+              onClose={() => setMessage({ type: null, text: "" })}
+            >
+              {message.text}
+            </Alert>
+          )}
 
-              {/* Filters */}
-              <Form onSubmit={handleSearch} className="mb-4">
-                <Row>
-                  <Col md={3}>
-                    <Form.Group>
-                      <InputGroup>
-                        <Form.Control
-                          type="text"
-                          placeholder="Search products..."
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                        <Button variant="outline-secondary" type="submit">
-                          <FaSearch />
-                        </Button>
-                      </InputGroup>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Select
-                        value={selectedManufacturer || ""}
-                        onChange={(e) =>
-                          setSelectedManufacturer(
-                            e.target.value ? parseInt(e.target.value) : null
-                          )
-                        }
-                      >
-                        <option value="">All Manufacturers</option>
-                        {manufacturers.map((manufacturer) => (
-                          <option key={manufacturer.id} value={manufacturer.id}>
-                            {manufacturer.producer_name}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      <Form.Select
-                        value={selectedChannel || ""}
-                        onChange={(e) =>
-                          setSelectedChannel(
-                            e.target.value ? parseInt(e.target.value) : null
-                          )
-                        }
-                      >
-                        <option value="">All Channels</option>
-                        {channels.map((channel) => (
-                          <option key={channel.id} value={channel.id}>
-                            {channel.channel_type_name ||
-                              `Channel ${channel.id}`}
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <div className="d-flex">
-                      <Button variant="primary" type="submit" className="me-2">
-                        <FaFilter /> Filter
-                      </Button>
-                      <Button
-                        variant="outline-secondary"
-                        onClick={() => {
-                          setSearchTerm("");
-                          setSelectedManufacturer(null);
-                          setSelectedChannel(null);
-                          setSortField("update_datetime");
-                          setSortDirection("desc");
-                        }}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                  </Col>
-                </Row>
-              </Form>
-
-              {/* Bulk Actions */}
-              {selectedProducts.length > 0 && (
-                <div className="mb-3 d-flex align-items-center">
-                  <span className="me-2">
-                    <Badge bg="info">{selectedProducts.length} selected</Badge>
-                  </span>
+          {/* Filters */}
+          <Form onSubmit={handleSearch} className="mb-4">
+            <Row>
+              <Col md={3}>
+                <Form.Group>
+                  <InputGroup>
+                    <Form.Control
+                      type="text"
+                      placeholder="Search products..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <Button variant="outline-secondary" type="submit">
+                      <FaSearch />
+                    </Button>
+                  </InputGroup>
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
                   <Form.Select
-                    value={bulkAction}
-                    onChange={(e) => setBulkAction(e.target.value)}
-                    className="me-2"
-                    style={{ width: "auto" }}
+                    value={selectedManufacturer || ""}
+                    onChange={(e) =>
+                      setSelectedManufacturer(
+                        e.target.value ? parseInt(e.target.value) : null
+                      )
+                    }
                   >
-                    <option value="">Bulk Action</option>
-                    <option value="assign-manufacturer">
-                      Assign Manufacturer
-                    </option>
-                    <option value="mark-updated">Mark as Updated</option>
-                    <option value="export">Export Data</option>
+                    <option value="">All Manufacturers</option>
+                    {manufacturers.map((manufacturer) => (
+                      <option key={manufacturer.id} value={manufacturer.id}>
+                        {manufacturer.producer_name}
+                      </option>
+                    ))}
                   </Form.Select>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleBulkAction}
-                    disabled={!bulkAction || selectedProducts.length === 0}
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <Form.Group>
+                  <Form.Select
+                    value={selectedChannel || ""}
+                    onChange={(e) =>
+                      setSelectedChannel(
+                        e.target.value ? parseInt(e.target.value) : null
+                      )
+                    }
                   >
-                    Apply
+                    <option value="">All Channels</option>
+                    {channels.map((channel) => (
+                      <option key={channel.id} value={channel.id}>
+                        {channel.channel_type_name || `Channel ${channel.id}`}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={3}>
+                <div className="d-flex">
+                  <Button variant="primary" type="submit" className="me-2">
+                    <FaFilter /> Filter
+                  </Button>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => {
+                      setSearchTerm("");
+                      setSelectedManufacturer(null);
+                      setSelectedChannel(null);
+                      setSortField("update_datetime");
+                      setSortDirection("desc");
+                    }}
+                  >
+                    Clear
                   </Button>
                 </div>
-              )}
+              </Col>
+            </Row>
+          </Form>
 
-              {/* Products Table */}
-              {loading ? (
-                <div className="text-center my-5">
-                  <Spinner animation="border" variant="primary" />
-                </div>
-              ) : error ? (
-                <Alert variant="danger">{error}</Alert>
-              ) : (
-                <>
-                  <div className="table-responsive">
-                    <Table striped hover className="align-middle">
-                      <thead>
-                        <tr>
-                          <th>
+          {/* Bulk Actions */}
+          {selectedProducts.length > 0 && (
+            <div className="mb-3 d-flex align-items-center">
+              <span className="me-2">
+                <Badge bg="info">{selectedProducts.length} selected</Badge>
+              </span>
+              <Form.Select
+                value={bulkAction}
+                onChange={(e) => setBulkAction(e.target.value)}
+                className="me-2"
+                style={{ width: "auto" }}
+              >
+                <option value="">Bulk Action</option>
+                <option value="assign-manufacturer">Assign Manufacturer</option>
+                <option value="mark-updated">Mark as Updated</option>
+                <option value="export">Export Data</option>
+              </Form.Select>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={handleBulkAction}
+                disabled={!bulkAction || selectedProducts.length === 0}
+              >
+                Apply
+              </Button>
+            </div>
+          )}
+
+          {/* Products Table */}
+          {loading ? (
+            <div className="text-center my-5">
+              <Spinner animation="border" variant="primary" />
+            </div>
+          ) : error ? (
+            <Alert variant="danger">{error}</Alert>
+          ) : (
+            <>
+              <div className="table-responsive">
+                <Table striped hover className="align-middle">
+                  <thead>
+                    <tr>
+                      <th>
+                        <Form.Check
+                          type="checkbox"
+                          onChange={handleSelectAll}
+                          checked={
+                            selectedProducts.length === products.length &&
+                            products.length > 0
+                          }
+                        />
+                      </th>
+                      <th
+                        onClick={() => handleSort("product_identifier")}
+                        className="cursor-pointer"
+                      >
+                        ID{" "}
+                        {sortField === "product_identifier" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th
+                        onClick={() => handleSort("sku")}
+                        className="cursor-pointer"
+                      >
+                        SKU{" "}
+                        {sortField === "sku" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th
+                        onClick={() => handleSort("ean")}
+                        className="cursor-pointer"
+                      >
+                        EAN{" "}
+                        {sortField === "ean" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th
+                        onClick={() => handleSort("manufacturer_id")}
+                        className="cursor-pointer"
+                      >
+                        Manufacturer{" "}
+                        {sortField === "manufacturer_id" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th
+                        onClick={() => handleSort("channel_id")}
+                        className="cursor-pointer"
+                      >
+                        Channel{" "}
+                        {sortField === "channel_id" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th
+                        onClick={() => handleSort("update_datetime")}
+                        className="cursor-pointer"
+                      >
+                        Updated{" "}
+                        {sortField === "update_datetime" &&
+                          (sortDirection === "asc" ? "▲" : "▼")}
+                      </th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.length === 0 ? (
+                      <tr>
+                        <td colSpan={8} className="text-center">
+                          No products found
+                        </td>
+                      </tr>
+                    ) : (
+                      products.map((product) => (
+                        <tr key={product.id}>
+                          <td>
                             <Form.Check
                               type="checkbox"
-                              onChange={handleSelectAll}
-                              checked={
-                                selectedProducts.length === products.length &&
-                                products.length > 0
-                              }
+                              checked={selectedProducts.includes(product.id)}
+                              onChange={() => handleSelectProduct(product.id)}
                             />
-                          </th>
-                          <th
-                            onClick={() => handleSort("product_identifier")}
-                            className="cursor-pointer"
-                          >
-                            ID{" "}
-                            {sortField === "product_identifier" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th
-                            onClick={() => handleSort("sku")}
-                            className="cursor-pointer"
-                          >
-                            SKU{" "}
-                            {sortField === "sku" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th
-                            onClick={() => handleSort("ean")}
-                            className="cursor-pointer"
-                          >
-                            EAN{" "}
-                            {sortField === "ean" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th
-                            onClick={() => handleSort("manufacturer_id")}
-                            className="cursor-pointer"
-                          >
-                            Manufacturer{" "}
-                            {sortField === "manufacturer_id" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th
-                            onClick={() => handleSort("channel_id")}
-                            className="cursor-pointer"
-                          >
-                            Channel{" "}
-                            {sortField === "channel_id" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th
-                            onClick={() => handleSort("update_datetime")}
-                            className="cursor-pointer"
-                          >
-                            Updated{" "}
-                            {sortField === "update_datetime" &&
-                              (sortDirection === "asc" ? "▲" : "▼")}
-                          </th>
-                          <th>Actions</th>
+                          </td>
+                          <td>{product.product_identifier}</td>
+                          <td>{product.sku}</td>
+                          <td>{product.ean}</td>
+                          <td>
+                            {product.manufacturer_name || (
+                              <Badge bg="light" text="dark">
+                                Not Assigned
+                              </Badge>
+                            )}
+                          </td>
+                          <td>
+                            {channels.find((c) => c.id === product.channel_id)
+                              ?.channel_type_name ||
+                              `Channel ${product.channel_id}`}
+                          </td>
+                          <td>
+                            {new Date(
+                              product.update_datetime
+                            ).toLocaleDateString()}
+                            {product.updated === 1 && (
+                              <Badge bg="success" className="ms-2">
+                                Updated
+                              </Badge>
+                            )}
+                          </td>
+                          <td>
+                            <Dropdown>
+                              <Dropdown.Toggle
+                                variant="light"
+                                size="sm"
+                                id={`dropdown-${product.id}`}
+                              >
+                                Actions
+                              </Dropdown.Toggle>
+                              <Dropdown.Menu>
+                                <Dropdown.Item>Edit</Dropdown.Item>
+                                <Dropdown.Item>View Details</Dropdown.Item>
+                                <Dropdown.Item>View Data</Dropdown.Item>
+                                <Dropdown.Divider />
+                                <Dropdown.Item>
+                                  Assign Manufacturer
+                                </Dropdown.Item>
+                              </Dropdown.Menu>
+                            </Dropdown>
+                          </td>
                         </tr>
-                      </thead>
-                      <tbody>
-                        {products.length === 0 ? (
-                          <tr>
-                            <td colSpan={8} className="text-center">
-                              No products found
-                            </td>
-                          </tr>
-                        ) : (
-                          products.map((product) => (
-                            <tr key={product.id}>
-                              <td>
-                                <Form.Check
-                                  type="checkbox"
-                                  checked={selectedProducts.includes(
-                                    product.id
-                                  )}
-                                  onChange={() =>
-                                    handleSelectProduct(product.id)
-                                  }
-                                />
-                              </td>
-                              <td>{product.product_identifier}</td>
-                              <td>{product.sku}</td>
-                              <td>{product.ean}</td>
-                              <td>
-                                {product.manufacturer_name || (
-                                  <Badge bg="light" text="dark">
-                                    Not Assigned
-                                  </Badge>
-                                )}
-                              </td>
-                              <td>
-                                {channels.find(
-                                  (c) => c.id === product.channel_id
-                                )?.channel_type_name ||
-                                  `Channel ${product.channel_id}`}
-                              </td>
-                              <td>
-                                {new Date(
-                                  product.update_datetime
-                                ).toLocaleDateString()}
-                                {product.updated === 1 && (
-                                  <Badge bg="success" className="ms-2">
-                                    Updated
-                                  </Badge>
-                                )}
-                              </td>
-                              <td>
-                                <Dropdown>
-                                  <Dropdown.Toggle
-                                    variant="light"
-                                    size="sm"
-                                    id={`dropdown-${product.id}`}
-                                  >
-                                    Actions
-                                  </Dropdown.Toggle>
-                                  <Dropdown.Menu>
-                                    <Dropdown.Item>Edit</Dropdown.Item>
-                                    <Dropdown.Item>View Details</Dropdown.Item>
-                                    <Dropdown.Item>View Data</Dropdown.Item>
-                                    <Dropdown.Divider />
-                                    <Dropdown.Item>
-                                      Assign Manufacturer
-                                    </Dropdown.Item>
-                                  </Dropdown.Menu>
-                                </Dropdown>
-                              </td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </Table>
-                  </div>
+                      ))
+                    )}
+                  </tbody>
+                </Table>
+              </div>
 
-                  {/* Pagination */}
-                  <div className="d-flex justify-content-between align-items-center">
-                    <div>
-                      <Form.Select
-                        className="d-inline-block"
-                        style={{ width: "auto" }}
-                        value={pageSize}
-                        onChange={(e) => {
-                          setPageSize(parseInt(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                      >
-                        {[10, 25, 50, 100].map((size) => (
-                          <option key={size} value={size}>
-                            {size} per page
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </div>
-                    <Pagination>{paginationItems}</Pagination>
-                  </div>
-                </>
-              )}
-            </Card.Body>
-          </Card>
-        </Container>
-      </div>
-    </>
+              {/* Pagination */}
+              <div className="d-flex justify-content-between align-items-center">
+                <div>
+                  <Form.Select
+                    className="d-inline-block"
+                    style={{ width: "auto" }}
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(parseInt(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    {[10, 25, 50, 100].map((size) => (
+                      <option key={size} value={size}>
+                        {size} per page
+                      </option>
+                    ))}
+                  </Form.Select>
+                </div>
+                <Pagination>{paginationItems}</Pagination>
+              </div>
+            </>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 

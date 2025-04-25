@@ -38,7 +38,6 @@ interface ChannelsResponse {
 // --- API Configuration ---
 const apiUrl =
   import.meta.env.VITE_SERVER_API_URL || "http://192.168.0.128:8000";
-const CHANNELS_API_ENDPOINT = `${apiUrl}/channels/`;
 
 // --- Arrow Path State ---
 interface ArrowPaths {
