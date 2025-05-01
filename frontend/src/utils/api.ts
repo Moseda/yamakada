@@ -1,5 +1,5 @@
 const apiUrl = import.meta.env.VITE_API_URL;
-
+const apiServerUrl = import.meta.env.VITE_SERVER_API_URl;
 // File: frontend\src\utils\api.ts
 import axios from "axios";
 

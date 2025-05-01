@@ -1,12 +1,11 @@
-// src/components/NavbarComponent.js
 import { useEffect, useState, useRef, ReactNode } from "react";
 import { Navbar, Container, Button } from "react-bootstrap";
-import Axios from "axios";
+import Axios, { AxiosError } from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { IoExitOutline } from "react-icons/io5";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaUserCircle, FaCog, FaInfo, FaLayerGroup } from "react-icons/fa";
-import mimuco_4 from "../../LoginAssets/mimuco_4.png"; // Adjust the path as necessary
+import mimuco_4 from "../../LoginAssets/mimuco_4.png";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const NavbarComponent = () => {
@@ -67,7 +66,8 @@ const NavbarComponent = () => {
         } else {
           console.error("Token invalid or expired.");
         }
-      } catch (error: any) {
+      } catch (err: unknown) {
+        const error = err as AxiosError;
         console.error(
           "Error verifying token:",
           error.response?.data || error.message
@@ -105,6 +105,7 @@ const NavbarComponent = () => {
       if (navbarRef.current) {
         const scale = isAtTop ? 1 : 0.98;
         navbarRef.current.style.transform = `scale(${scale})`;
+        setIsDropdownOpen(false);
       }
 
       setPrevScrollPos(currentScrollPos);

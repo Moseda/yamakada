@@ -1,7 +1,11 @@
 // File: backend/routes/fileRoutes.ts
 import express from "express";
 import multer from "multer";
-import { uploadFile, getFiles } from "../controllers/fileController";
+import {
+  uploadFile,
+  getFiles,
+  getFileStatus,
+} from "../controllers/fileController";
 import { validateFileType } from "../Middlewares/fileValidator";
 
 const router = express.Router();
@@ -30,6 +34,9 @@ router.post(
 );
 
 // GET /api/fileRoutes/files
-router.get("/files", getFiles); // Fixed path
+router.get("/files", getFiles);
+
+// GET /api/fileRoutes/status/:fileId
+router.get("/status/:fileId", getFileStatus);
 
 export default router;

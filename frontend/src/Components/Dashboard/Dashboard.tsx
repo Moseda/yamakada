@@ -14,6 +14,7 @@ import NavbarComponent from "./NavbarComponent";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { debounce } from "lodash"; // Import debounce
+import RecentProducts from "./RecentProducts";
 
 // --- Interfaces ---
 interface Channel {
@@ -747,38 +748,7 @@ const Dashboard = () => {
             </Card.Body>
           </Card>
           {/* Added Articles */}
-          <Card className="mb-4 shadow-sm border-0">
-            <Card.Header className="bg-white border-bottom border-2 border-success">
-              <h5 className="mb-0 text-success fw-bold">
-                Hinzugefügte Artikel
-              </h5>
-            </Card.Header>
-            <Card.Body>
-              {" "}
-              {/* Static */}{" "}
-              <ListGroup variant="flush">
-                <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="mb-1">Samsung Galaxy S22</h6>
-                    <p className="mb-0 text-muted small">
-                      SKU-5678 • Elektronik
-                    </p>
-                  </div>
-                  <small className="text-muted">Heute</small>
-                </ListGroup.Item>
-                <ListGroup.Item className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="mb-1">Nike Laufschuhe</h6>
-                    <p className="mb-0 text-muted small">SKU-8792 • Kleidung</p>
-                  </div>
-                  <small className="text-muted">Gestern</small>
-                </ListGroup.Item>
-              </ListGroup>
-              <Button variant="outline-success" className="w-100 mt-3">
-                Alle Artikel anzeigen
-              </Button>
-            </Card.Body>
-          </Card>
+          <RecentProducts />
           {/* Error Logs */}
           <Card className="mb-4 shadow-sm border-0">
             <Card.Header className="bg-white border-bottom border-2 border-danger">

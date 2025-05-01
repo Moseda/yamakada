@@ -13,9 +13,11 @@ import {
   InputGroup,
   Spinner,
   Alert,
+  Navbar,
 } from "react-bootstrap";
 import { FaFilter, FaSearch, FaTags } from "react-icons/fa";
 import axios from "axios";
+import NavbarComponent from "./NavbarComponent";
 
 interface Product {
   id: number;
@@ -230,6 +232,7 @@ const ProductCategorizer: React.FC = () => {
 
   return (
     <Container fluid className="mt-4">
+      <NavbarComponent />
       <Card className="shadow-sm">
         <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
           <div>

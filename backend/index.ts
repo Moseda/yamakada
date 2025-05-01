@@ -23,6 +23,7 @@ import { errorHandler } from "./Middlewares/errorHandler";
 import settingsRouter from "./routes/settings";
 import productRouter from "./routes/categorizer";
 import fileRoutes from "./routes/fileRoutes";
+import mappingRouter from "./routes/mappingRoutes";
 
 //types
 import type { Request, Response } from "express";
@@ -60,11 +61,13 @@ app.use(
     origin: [
       "http://localhost:5173",
       `${process.env.FRONTEND_URL}`,
-      "http://192.168.56.1:5173",
+      `${process.env.API_URL}`,
+      //"http://192.168.56.1:5173",
       "http://172.19.240.1:5173",
       "http://192.168.0.128:8000",
     ],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
@@ -767,6 +770,9 @@ app.use("/api", productRouter);
 
 // Add file upload routes
 app.use("/api/fileRoutes", fileRoutes);
+
+//Add mapping
+app.use("/api/mappingRoutes", mappingRouter);
 
 // Error handling middleware (best be last)
 app.use(errorHandler);

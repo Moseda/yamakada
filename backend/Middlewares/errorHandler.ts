@@ -1,11 +1,12 @@
 // File: backend/middleware/errorHandler.ts
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AppError } from "../utils/appError";
 
 export const errorHandler = (
   err: Error | AppError,
   req: Request,
-  res: Response
+  res: Response,
+  next: NextFunction //let ts know this is an error handler
 ) => {
   let statusCode = 500;
   let message = "Internal Server Error";

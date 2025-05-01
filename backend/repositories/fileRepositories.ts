@@ -1,4 +1,4 @@
-// File: backend/repositories/fileRepository.ts
+// File: backend/repositories/fileRepositories.ts
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import db from "../db";
 
@@ -20,6 +20,13 @@ interface InsertResult extends ResultSetHeader {
   insertId: number;
 }
 
+// File status interface
+interface FileStatus extends RowDataPacket {
+  id: number;
+  status: string;
+  message?: string;
+}
+
 // Save file metadata to the database
 export const saveFileMetadata = async (
   fileData: FileMetadata
@@ -37,6 +44,12 @@ export const saveFileMetadata = async (
     ]
   );
 
+  // Initialize the file status in the processing_status table
+  await db.execute(
+    `INSERT INTO processing_status (file_id, status) VALUES (?, 'processing')`,
+    [result.insertId]
+  );
+
   return result.insertId;
 };
 
@@ -50,6 +63,9 @@ export const saveJsonData = async (
     `INSERT INTO json_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
+
+  // Update the file status to processed
+  await updateFileStatus(fileId, "processed");
 
   return result.insertId;
 };
@@ -65,6 +81,9 @@ export const saveCsvData = async (
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
 
+  // Update the file status to processed
+  await updateFileStatus(fileId, "processed");
+
   return result.insertId;
 };
 
@@ -78,6 +97,9 @@ export const saveExcelData = async (
     `INSERT INTO excel_data (file_id, data, structure) VALUES (?, ?, ?)`,
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
+
+  // Update the file status to processed
+  await updateFileStatus(fileId, "processed");
 
   return result.insertId;
 };
@@ -93,6 +115,9 @@ export const saveXmlData = async (
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
 
+  // Update the file status to processed
+  await updateFileStatus(fileId, "processed");
+
   return result.insertId;
 };
 
@@ -107,6 +132,9 @@ export const saveBmecatData = async (
     [fileId, JSON.stringify(data), JSON.stringify(structure)]
   );
 
+  // Update the file status to processed
+  await updateFileStatus(fileId, "processed");
+
   return result.insertId;
 };
 
@@ -120,6 +148,30 @@ interface FileRow extends RowDataPacket {
   file_type: string;
   upload_date: string;
 }
+
+// Update file processing status
+export const updateFileStatus = async (
+  fileId: number,
+  status: string,
+  message?: string
+): Promise<void> => {
+  await db.execute(
+    `UPDATE processing_status SET status = ?, message = ?, updated_at = NOW() WHERE file_id = ?`,
+    [status, message || null, fileId]
+  );
+};
+
+// Get file processing status
+export const getFileStatus = async (
+  fileId: string | number
+): Promise<FileStatus | null> => {
+  const [rows] = await db.execute<FileStatus[]>(
+    `SELECT file_id as id, status, message FROM processing_status WHERE file_id = ?`,
+    [fileId]
+  );
+
+  return rows[0] || null;
+};
 
 // Get all files
 export const getAllFiles = async (): Promise<FileRow[]> => {

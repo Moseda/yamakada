@@ -16,6 +16,8 @@ import ProductSystem from "./Components/Main/ProtuctSystem";
 import EmailVerificationPage from "./Verification/EmailVerificationPage";
 import Channels from "./Components/Main/Channels";
 import FilesOverview from "./Components/Uploader/FilesOverview";
+import RecentProductsPage from "./Components/Dashboard/RecentProductsPage";
+import MapperComponent from "./Components/Uploader/MapperComponent";
 
 const router = createBrowserRouter([
   {
@@ -39,6 +41,28 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <Dashboard />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/products/recently-updated",
+    element: (
+      <ProtectedRoute>
+        <RecentProductsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/MapperComponent",
+    element: (
+      <ProtectedRoute>
+        <MapperComponent
+          fileId={""}
+          fileType={""}
+          onMappingComplete={function (): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
       </ProtectedRoute>
     ),
   },

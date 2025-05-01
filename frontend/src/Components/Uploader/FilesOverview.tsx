@@ -1,11 +1,18 @@
-// File: frontend\src\Components\Uploader\FilesOverview.tsx
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, ChangeEvent } from "react";
 import { extractErrorMessage } from "../errors/errorUtils";
+import SchemaMapperComponent from "./MapperComponent";
+
 // Get API URL from environment variables
 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3002";
 
+type SupportedFileType = {
+  name: string;
+  extensions: string[];
+  mimeTypes: string[];
+};
+
 // Define supported file types primarily for the input's 'accept' attribute
-const supportedFileTypes = [
+const supportedFileTypes: SupportedFileType[] = [
   { name: "JSON", extensions: [".json"], mimeTypes: ["application/json"] },
   { name: "CSV", extensions: [".csv"], mimeTypes: ["text/csv"] },
   {
@@ -17,14 +24,15 @@ const supportedFileTypes = [
     ],
   },
   {
-    name: "XML", // Includes BMEcat for accept attribute
+    name: "XML",
     extensions: [".xml"],
     mimeTypes: ["application/xml", "text/xml"],
   },
 ];
+const token = localStorage.getItem("accessToken");
 
 // Helper function to get all allowed extensions for the file input
-const getAllowedExtensions = () => {
+const getAllowedExtensions = (): string => {
   return supportedFileTypes.flatMap((type) => type.extensions).join(",");
 };
 
@@ -34,60 +42,106 @@ const isExtensionSupported = (filename: string): boolean => {
   return supportedFileTypes.some((type) => type.extensions.includes(extension));
 };
 
-const FileUploadComponent = () => {
-  const [file, setFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [uploadSuccess, setUploadSuccess] = useState(false);
-  const [extensionError, setExtensionError] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
+// Helper function to get file type from extension
+const getFileTypeFromExtension = (filename: string): string => {
+  const extension = filename
+    .substring(filename.lastIndexOf(".") + 1)
+    .toLowerCase();
+  if (extension === "json") return "json";
+  if (extension === "csv") return "csv";
+  if (extension === "xlsx" || extension === "xls") return "excel";
+  if (extension === "xml") return "xml";
+  return "unknown";
+};
 
-  // Log any time the file state changes
+const FileUploadComponent: React.FC = () => {
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [uploadSuccess, setUploadSuccess] = useState<boolean>(false);
+  const [extensionError, setExtensionError] = useState<string>("");
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null);
+  const [uploadedFileType, setUploadedFileType] = useState<string | null>(null);
+  const [showMapper, setShowMapper] = useState<boolean>(false);
+  const [processingStatus, setProcessingStatus] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     console.log("File state changed:", file?.name || "No file");
   }, [file]);
 
-  // Reset component state
+  useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const pollFileStatus = (fileId: string) => {
+    console.log(fileId);
+
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+    setProcessingStatus("processing");
+
+    pollingIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await fetch(
+          `${apiUrl}/api/fileRoutes/status/${fileId}`
+        );
+        const data = await response.json();
+        console.log("Polling file status:", data.status);
+
+        if (data.status === "processed") {
+          setProcessingStatus("processed");
+          clearInterval(pollingIntervalRef.current!);
+          setShowMapper(true);
+        } else if (data.status === "error") {
+          setProcessingStatus("error");
+          setErrorMessage(data.message || "Error processing file");
+          clearInterval(pollingIntervalRef.current!);
+        }
+      } catch (error) {
+        console.error("Error polling file status:", error);
+      }
+    }, 2000);
+  };
+
   const resetState = () => {
     setFile(null);
     setIsUploading(false);
     setErrorMessage("");
     setUploadSuccess(false);
     setExtensionError("");
+    setUploadedFileId(null);
+    setUploadedFileType(null);
+    setShowMapper(false);
+    setProcessingStatus(null);
+
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  // Handle file selection
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     console.log("File input change event triggered");
 
-    // Check if event has files
-    if (!event.target.files) {
-      console.error("No files property on event target");
+    const selectedFile = event.target.files?.[0];
+    if (!selectedFile) {
+      console.error("Selected file is null or undefined");
       return;
     }
 
-    // Check if files array has items
-    if (event.target.files.length === 0) {
-      console.error("Files array is empty");
-      return;
-    }
-
-    // Get the selected file
-    const selectedFile = event.target.files[0];
-    console.log("Selected file:", selectedFile?.name || "None");
-
-    // Reset state before processing new file
     resetState();
 
-    if (!selectedFile) {
-      console.error("Selected file is null despite files array having length");
-      return;
-    }
-
-    // Check file extension
     if (!isExtensionSupported(selectedFile.name)) {
       setExtensionError(
         `File type not supported. Please select a file with one of these extensions: ${getAllowedExtensions()}`
@@ -95,13 +149,11 @@ const FileUploadComponent = () => {
       return;
     }
 
-    // Set the file if it passes validation
     setFile(selectedFile);
+    setUploadedFileType(getFileTypeFromExtension(selectedFile.name));
   };
 
-  // Handle the upload process
   const handleUpload = async () => {
-    // Check if we have a file
     if (!file) {
       setErrorMessage("Please select a supported file first.");
       return;
@@ -111,16 +163,12 @@ const FileUploadComponent = () => {
     setIsUploading(true);
     setErrorMessage("");
     setUploadSuccess(false);
+    setUploadedFileId(null);
 
-    // Create form data
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      // Log the URL we're sending to
-      console.log("Sending request to:", `${apiUrl}/api/fileRoutes/upload`);
-
-      // Send the request
       const response = await fetch(`${apiUrl}/api/fileRoutes/upload`, {
         method: "POST",
         body: formData,
@@ -128,7 +176,6 @@ const FileUploadComponent = () => {
 
       console.log("Response status:", response.status);
 
-      // Try to parse JSON response
       let result;
       try {
         result = await response.json();
@@ -138,16 +185,17 @@ const FileUploadComponent = () => {
         result = null;
       }
 
-      // Check if request was successful
       if (!response.ok) {
         throw new Error(
           result?.message || `Upload failed with status ${response.status}`
         );
       }
 
-      // Upload successful
       setUploadSuccess(true);
-      console.log("Upload successful!");
+      setUploadedFileId(result.data?.fileId);
+      console.log("Upload successful! File ID:", result.data?.fileId);
+
+      pollFileStatus(result.data?.fileId);
     } catch (error: unknown) {
       const userFriendlyMessage = extractErrorMessage(error);
       setErrorMessage(userFriendlyMessage);
@@ -157,89 +205,268 @@ const FileUploadComponent = () => {
     }
   };
 
+  const handleMappingComplete = (success = true) => {
+    if (success) {
+      alert("Mapping completed successfully! Redirecting to data view...");
+    } else {
+      resetState();
+    }
+  };
+
+  if (showMapper && uploadedFileId && uploadedFileType) {
+    console.log("About to render SchemaMapperComponent", {
+      showMapper,
+      uploadedFileId,
+      uploadedFileType,
+    });
+
+    return (
+      <SchemaMapperComponent
+        fileId={uploadedFileId}
+        fileType={uploadedFileType}
+        onMappingComplete={handleMappingComplete}
+      />
+    );
+  }
+
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Upload Data File</h2>
+    <div className="container">
+      <div className="row justify-content-center">
+        <div className="col-md-8 col-lg-6">
+          <div className="card shadow-sm border-0 my-5">
+            <div className="card-header bg-primary text-white">
+              <h4 className="mb-0">
+                <i className="bi bi-upload me-2"></i>Upload Data File
+              </h4>
+            </div>
+            <div className="card-body p-4">
+              {/* File input */}
+              <div className="mb-4">
+                <label htmlFor="fileInput" className="form-label fw-bold">
+                  Select a file
+                </label>
+                <div className="input-group">
+                  <input
+                    type="file"
+                    id="fileInput"
+                    ref={fileInputRef}
+                    onChange={handleFileChange}
+                    accept={getAllowedExtensions()}
+                    className="form-control"
+                  />
+                </div>
+                <div className="form-text">
+                  Supported formats:{" "}
+                  {supportedFileTypes.map((type) => type.name).join(", ")}
+                </div>
+              </div>
 
-      {/* File input wrapper with debugging info */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Select file (Supported: {getAllowedExtensions()})
-        </label>
+              {/* Error for unsupported file types */}
+              {extensionError && (
+                <div className="alert alert-warning" role="alert">
+                  <i className="bi bi-exclamation-triangle me-2"></i>
+                  {extensionError}
+                </div>
+              )}
 
-        {/* Use a more explicit input element */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileChange}
-          accept={getAllowedExtensions()}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+              {/* Selected file info */}
+              {file && (
+                <div className="card bg-light mb-4">
+                  <div className="card-body">
+                    <h5 className="card-title">
+                      <i className="bi bi-file-earmark me-2"></i>
+                      Selected File
+                    </h5>
+                    <ul className="list-group list-group-flush">
+                      <li className="list-group-item bg-transparent">
+                        <span className="fw-bold">Name:</span> {file.name}
+                      </li>
+                      <li className="list-group-item bg-transparent">
+                        <span className="fw-bold">Size:</span>{" "}
+                        {(file.size / 1024).toFixed(2)} KB
+                      </li>
+                      <li className="list-group-item bg-transparent">
+                        <span className="fw-bold">Last modified:</span>{" "}
+                        {new Date(file.lastModified).toLocaleString()}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
 
-        {/* Display current file input state for debugging */}
-        <div className="mt-1 text-xs text-gray-500">
-          Input status:{" "}
-          {fileInputRef.current ? "Initialized" : "Not initialized"}
+              {/* Error messages */}
+              {errorMessage && (
+                <div className="alert alert-danger" role="alert">
+                  <i className="bi bi-x-circle me-2"></i>
+                  {errorMessage}
+                </div>
+              )}
+
+              {/* Upload success message */}
+              {uploadSuccess && (
+                <div className="alert alert-success" role="alert">
+                  <i className="bi bi-check-circle me-2"></i>
+                  File uploaded successfully!
+                  {processingStatus === "processing" && (
+                    <div className="mt-2">
+                      <div className="d-flex align-items-center">
+                        <div
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        >
+                          <span className="visually-hidden">Processing...</span>
+                        </div>
+                        <span>Processing file data...</span>
+                      </div>
+                      <div className="progress mt-2">
+                        <div
+                          className="progress-bar progress-bar-striped progress-bar-animated"
+                          role="progressbar"
+                          style={{ width: "100%" }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
+                  {processingStatus === "error" && (
+                    <div className="text-danger mt-2">
+                      <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                      Error processing file. Please try again.
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="d-flex justify-content-between mt-4">
+                <button
+                  onClick={resetState}
+                  className="btn btn-outline-secondary"
+                  type="button"
+                >
+                  <i className="bi bi-x-circle me-2"></i>Reset
+                </button>
+
+                <button
+                  onClick={handleUpload}
+                  disabled={!file || isUploading || uploadSuccess}
+                  className="btn btn-primary"
+                  type="button"
+                >
+                  {isUploading ? (
+                    <>
+                      <span
+                        className="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <i className="bi bi-cloud-arrow-up me-2"></i>Upload
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Process description */}
+              <div className="mt-5">
+                <h5 className="fw-bold">How It Works</h5>
+                <div className="card">
+                  <div className="card-body p-0">
+                    <ul className="list-group list-group-flush">
+                      <li className="list-group-item d-flex">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                          style={{ width: "30px", height: "30px" }}
+                        >
+                          1
+                        </div>
+                        <div>
+                          <strong>Upload File</strong>
+                          <p className="mb-0 text-muted">
+                            Select and upload your data file (JSON, CSV, Excel,
+                            XML)
+                          </p>
+                        </div>
+                      </li>
+                      <li className="list-group-item d-flex">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                          style={{ width: "30px", height: "30px" }}
+                        >
+                          2
+                        </div>
+                        <div>
+                          <strong>Processing</strong>
+                          <p className="mb-0 text-muted">
+                            Our system processes your file and analyzes its
+                            structure
+                          </p>
+                        </div>
+                      </li>
+                      <li className="list-group-item d-flex">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                          style={{ width: "30px", height: "30px" }}
+                        >
+                          3
+                        </div>
+                        <div>
+                          <strong>Map Schema</strong>
+                          <p className="mb-0 text-muted">
+                            Map your data fields to our standardized format
+                          </p>
+                        </div>
+                      </li>
+                      <li className="list-group-item d-flex">
+                        <div
+                          className="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3"
+                          style={{ width: "30px", height: "30px" }}
+                        >
+                          4
+                        </div>
+                        <div>
+                          <strong>View & Analyze</strong>
+                          <p className="mb-0 text-muted">
+                            Access your imported data for visualization and
+                            analysis
+                          </p>
+                        </div>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional information */}
+              <div className="mt-4">
+                <div className="alert alert-info" role="alert">
+                  <h5 className="alert-heading">
+                    <i className="bi bi-info-circle me-2"></i>Tips for best
+                    results
+                  </h5>
+                  <ul className="mb-0 ps-3">
+                    <li>Ensure your file is properly formatted with headers</li>
+                    <li>Files should be less than 50MB in size</li>
+                    <li>For CSV files, ensure data is comma-separated</li>
+                    <li>For Excel files, data should be in the first sheet</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <div className="card-footer bg-light py-3">
+              <div className="d-flex justify-content-center">
+                <span className="text-muted">
+                  Need help?{" "}
+                  <a href="/support" className="text-decoration-none">
+                    Contact Support
+                  </a>
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-
-      {/* Error for unsupported file types */}
-      {extensionError && (
-        <div className="mb-4 p-3 bg-yellow-50 text-yellow-700 rounded-md">
-          {extensionError}
-        </div>
-      )}
-
-      {/* Selected file info */}
-      {file && (
-        <div className="mb-4 p-3 bg-gray-50 rounded-md">
-          <p>
-            <strong>File selected:</strong> {file.name}
-          </p>
-          <p>
-            <strong>Size:</strong> {(file.size / 1024).toFixed(2)} KB
-          </p>
-          <p>
-            <strong>Last modified:</strong>{" "}
-            {new Date(file.lastModified).toLocaleString()}
-          </p>
-        </div>
-      )}
-
-      {/* Error messages */}
-      {errorMessage && (
-        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md">
-          {errorMessage}
-        </div>
-      )}
-
-      {/* Success message */}
-      {uploadSuccess && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
-          File uploaded successfully! Backend is processing.
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="flex justify-between items-center mt-6">
-        <button
-          onClick={resetState}
-          className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-        >
-          Reset
-        </button>
-
-        <button
-          onClick={handleUpload}
-          disabled={!file || isUploading}
-          className={`px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            !file || isUploading
-              ? "bg-blue-300 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
-        >
-          {isUploading ? "Uploading..." : "Upload"}
-        </button>
       </div>
     </div>
   );
