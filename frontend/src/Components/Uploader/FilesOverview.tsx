@@ -29,7 +29,6 @@ const supportedFileTypes: SupportedFileType[] = [
     mimeTypes: ["application/xml", "text/xml"],
   },
 ];
-const token = localStorage.getItem("accessToken");
 
 // Helper function to get all allowed extensions for the file input
 const getAllowedExtensions = (): string => {
